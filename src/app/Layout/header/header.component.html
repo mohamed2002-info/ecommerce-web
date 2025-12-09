@@ -1,0 +1,40 @@
+<div class="header-container">
+  <div class="top-bar">
+    <div class="logo">
+      <img src="/assets/Img/ASM.png" alt="Logo">
+    </div>
+    <div class="search-bar-container">
+      <div class="search-bar">
+        <input type="text" placeholder="  Search Articles..." />
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      </div>
+    </div>
+    <div class="user-menu-container">
+      <button class="user-icon-button" (click)="toggleUserMenu()">
+        <span class="user-initial">{{ getUserInitial() }}</span>
+      </button>
+      <div class="user-dropdown" *ngIf="showUserMenu">
+        <button class="logout-button" (click)="logout()">
+          <i class="fa-solid fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="category-button">
+      <i class="fa-solid fa-cart-shopping" style="font-size: 23px;"></i>
+    </button>
+  </div>
+  <div class="products-info">
+    <div class="products-count">
+      100 products found.
+    </div>
+    <div class="sort-container">
+      <span>Sort by:</span>
+      <select class="sort-dropdown">
+        <option value="ascending">Price ascending</option>
+        <option value="descending">Price descending</option>
+      </select>
+    </div>
+  </div>  
+</div>
