@@ -5,35 +5,120 @@
     </div>
     <div class="search-bar-container">
       <div class="search-bar">
-        <input type="text" placeholder="  Search Articles..." />
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input 
+          type="text" 
+          placeholder="Search Articles..." 
+          [(ngModel)]="searchTerm"
+          (input)="onSearchInput($event)"
+          (keypress)="onSearchKeyPress($event)" />
+        <button class="search-icon-button" (click)="onSearch()">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        </button>
       </div>
     </div>
-    <div class="user-menu-container">
-      <button class="user-icon-button" (click)="toggleUserMenu()">
-        <span class="user-initial">{{ getUserInitial() }}</span>
+    <div class="top-bar-actions">
+      <button class="action-button" title="Wishlist">
+        <i class="fa-solid fa-heart"></i>
       </button>
-      <div class="user-dropdown" *ngIf="showUserMenu">
-        <button class="logout-button" (click)="logout()">
-          <i class="fa-solid fa-sign-out-alt"></i> Logout
+      <button class="action-button cart-button" title="Shopping Cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-badge" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
+      </button>
+      <div class="user-menu-container">
+        <button class="action-button user-button" (click)="toggleUserMenu()" [title]="userEmail || 'Account'">
+          <i class="fa-solid fa-user"></i>
         </button>
+        <div class="user-dropdown" *ngIf="showUserMenu">
+          <button class="logout-button" (click)="logout()">
+            <i class="fa-solid fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
       </div>
     </div>
   </div>
   <div class="nav-bar">
-    <button class="category-button">
-      <i class="fa-solid fa-cart-shopping" style="font-size: 23px;"></i>
-    </button>
+    <div class="menu-container">
+      <button class="menu-icon-button">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="mega-menu">
+        <div class="mega-menu-content">
+          <div class="mega-menu-status" *ngIf="isLoadingCategories">Loading categories...</div>
+          <div class="mega-menu-status error" *ngIf="!isLoadingCategories && categoriesError">{{ categoriesError }}</div>
+          <div class="mega-menu-status" *ngIf="!isLoadingCategories && !categoriesError && !categories.length">No categories available.</div>
+          <ng-container *ngIf="!isLoadingCategories && !categoriesError && categories.length">
+            <div class="mega-menu-column" *ngFor="let category of categories">
+              <h3 class="mega-menu-heading" (click)="onCategoryClick(category)">{{ category.name }}</h3>
+              <ng-container *ngIf="getSubCategories(category).length; else noSubCategories">
+                <ul class="mega-menu-list">
+                  <li *ngFor="let sub of getSubCategories(category)" (click)="onSubCategoryClick(sub, category)">{{ sub.name }}</li>
+                </ul>
+              </ng-container>
+              <ng-template #noSubCategories>
+                <ul class="mega-menu-list">
+                  <li class="empty" (click)="onCategoryClick(category)">No sub-categories</li>
+                </ul>
+              </ng-template>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+    <div class="breadcrumbs">
+      <span class="crumb active" (click)="clearCategoryFilter()">All products</span>
+      <ng-container *ngIf="selectedCategoryName">
+        <span class="separator">/</span>
+        <span class="crumb active" (click)="onCategoryCrumbClick()">{{ selectedCategoryName }}</span>
+      </ng-container>
+      <ng-container *ngIf="selectedSubCategoryName">
+        <span class="separator">/</span>
+        <span class="crumb active">{{ selectedSubCategoryName }}</span>
+      </ng-container>
+    </div>
+    <div class="nav-actions">
+      <button class="contact-button" title="Contact Us" (click)="scrollToContact()">
+        <i class="fa-solid fa-phone"></i>
+        <span>Contact</span>
+      </button>
+      <div class="help-menu-container">
+        <button class="help-button" title="Help" (click)="toggleHelpDialog($event)">
+          <i class="fa-solid fa-question-circle"></i>
+          <span>Help</span>
+        </button>
+        <div class="help-dropdown" *ngIf="showHelpDialog" (click)="$event.stopPropagation()">
+          <label class="help-label">What is the problem?</label>
+          <select class="help-select" [(ngModel)]="selectedHelpOption">
+            <option *ngFor="let option of helpOptions" [value]="option">{{ option }}</option>
+          </select>
+          <label class="help-label">Description</label>
+          <textarea
+            class="help-textarea"
+            rows="3"
+            [(ngModel)]="helpDescription"
+            placeholder="Describe the issue briefly"></textarea>
+          <button class="help-send-button" (click)="sendHelpEmail()">Send email</button>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="products-info">
     <div class="products-count">
-      100 products found.
+      {{ productCount }} products found.
+    </div>
+    <div class="view-controls">
+      <div class="view-toggle">
+        <button class="view-button" [class.active]="viewMode === 'list'" (click)="setViewMode('list')">
+          <i class="fa-solid fa-list-ul"></i>
+        </button>
+        <button class="view-button" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')">
+          <i class="fa-solid fa-th"></i>
+        </button>
+      </div>
     </div>
     <div class="sort-container">
-      <span>Sort by:</span>
-      <select class="sort-dropdown">
-        <option value="ascending">Price ascending</option>
-        <option value="descending">Price descending</option>
+      <span class="sort-label">Sort by</span>
+      <select class="sort-dropdown" [value]="sortOption" (change)="onSortChange($event)">
+        <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
       </select>
     </div>
   </div>  

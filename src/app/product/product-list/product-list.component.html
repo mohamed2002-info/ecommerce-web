@@ -1,0 +1,17 @@
+<div class="product-list">
+  <div *ngFor="let product of products" class="product-list-item" (click)="viewProductDetails(product)">
+    <div class="product-image">
+      <img [src]="localUrl + product.image_url" alt="Product Image">
+    </div>
+    <div class="product-details">
+      <h3>{{product.name}}</h3>
+      <p class="product-reference">[{{product.reference}}]</p>
+      <p class="description" [attr.data-full-text]="product.description">{{product.description}}</p>
+      <div class="product-price">
+        {{product.price}} DT
+      </div>
+    </div>
+  </div>
+</div>
+<app-product-details *ngIf="selectedProduct" [product]="selectedProduct" (closeModal)="closeProductDetails()"></app-product-details>
+
