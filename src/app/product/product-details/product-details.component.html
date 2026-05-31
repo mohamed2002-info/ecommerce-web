@@ -1,0 +1,114 @@
+<div class="dialog-background">
+    <div class="detailed-product-card dialog">
+      <button class="close-button" (click)="onClose()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="product-images">
+        <img [src]="localUrl + product.image_url" alt="Main Product Image" class="main-image">
+      </div>
+      <div class="product-info">
+        <h3>{{product.name}}</h3>
+        <p class="product-ref">[{{product.reference}}]</p>
+        <p class="product-desc">
+          {{product.description}}
+        </p>
+        <div class="product-price">
+          <span>{{product.price}} DT</span>
+        </div>
+        <button class="wishlist-toggle" [class.active]="isInWishlist()" (click)="toggleWishlist()" *ngIf="!isAdmin">
+          <i class="fa-solid fa-heart"></i>
+          <span>{{ isInWishlist() ? 'Remove from wishlist' : 'Add to wishlist' }}</span>
+        </button>
+        <button class="cart-toggle" [class.active]="isInCart()" (click)="addToCart()" *ngIf="!isAdmin">
+          <i class="fa-solid fa-cart-plus"></i>
+          <span>{{ isInCart() ? 'In cart' : 'Add to cart' }}</span>
+        </button>
+        <div class="admin-actions" *ngIf="isAdmin">
+          <button class="edit-button" (click)="onEdit()">
+            <i class="fa-solid fa-pencil"></i>
+            <span>Edit Product</span>
+          </button>
+          <button class="delete-button" (click)="onDelete()">
+            <i class="fa-solid fa-trash"></i>
+            <span>Delete Product</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Edit Modal -->
+  <div class="admin-modal-overlay" *ngIf="showProductModal" (click)="closeProductModal()">
+    <div class="admin-modal admin-modal-large" (click)="$event.stopPropagation()">
+      <div class="admin-modal-header">
+        <h2>Edit Product</h2>
+        <button class="admin-modal-close" (click)="closeProductModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>Product Name *</label>
+            <input type="text" [(ngModel)]="productName" placeholder="Enter product name" class="admin-form-input" />
+          </div>
+          <div class="admin-form-group">
+            <label>Reference *</label>
+            <input type="text" [(ngModel)]="productReference" placeholder="Enter product reference" class="admin-form-input" />
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>Sub-Category *</label>
+            <select [(ngModel)]="selectedSubCategoryId" class="admin-form-input">
+              <option [value]="null">Select a sub-category</option>
+              <option *ngFor="let sub of getAllSubCategories()" [value]="sub.id">{{ sub.name }}</option>
+            </select>
+          </div>
+          <div class="admin-form-group">
+            <label>Price *</label>
+            <input type="number" [(ngModel)]="productPrice" placeholder="0.00" step="0.01" min="0" class="admin-form-input" />
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>Description *</label>
+          <textarea [(ngModel)]="productDescription" placeholder="Enter product description" rows="4" class="admin-form-input"></textarea>
+        </div>
+        <div class="admin-form-group">
+          <label>Current Product Image</label>
+          <div class="admin-current-image" *ngIf="productImagePreview">
+            <img [src]="productImagePreview" alt="Current Product Image" />
+          </div>
+          <p *ngIf="!productImagePreview" style="color: #666; font-style: italic;">No image available</p>
+        </div>
+        <div class="admin-message" *ngIf="adminMessage" [class.success]="adminMessageType === 'success'" [class.error]="adminMessageType === 'error'">
+          {{ adminMessage }}
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="admin-button-cancel" (click)="closeProductModal()">Cancel</button>
+        <button class="admin-button-submit" (click)="submitProduct()">Update Product</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="admin-modal-overlay" *ngIf="showDeleteConfirmModal" (click)="closeDeleteConfirmModal()">
+    <div class="admin-modal admin-modal-small" (click)="$event.stopPropagation()">
+      <div class="admin-modal-header">
+        <h2>Confirm Delete</h2>
+        <button class="admin-modal-close" (click)="closeDeleteConfirmModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="admin-modal-body">
+        <p>Are you sure you want to delete <strong>{{ product.name }}</strong>?</p>
+        <p class="admin-warning-text">This action cannot be undone.</p>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="admin-button-cancel" (click)="closeDeleteConfirmModal()">Cancel</button>
+        <button class="admin-button-delete" (click)="executeDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+  

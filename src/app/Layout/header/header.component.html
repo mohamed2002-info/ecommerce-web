@@ -17,10 +17,11 @@
       </div>
     </div>
     <div class="top-bar-actions">
-      <button class="action-button" title="Wishlist">
+      <button class="action-button" title="Wishlist" (click)="goToWishlist()" *ngIf="!isAdmin">
         <i class="fa-solid fa-heart"></i>
+        <span class="wishlist-badge" *ngIf="wishlistCount > 0">{{ wishlistCount }}</span>
       </button>
-      <button class="action-button cart-button" title="Shopping Cart">
+      <button class="action-button cart-button" title="Shopping Cart" (click)="goToCart()" *ngIf="!isAdmin">
         <i class="fa-solid fa-cart-shopping"></i>
         <span class="cart-badge" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
       </button>
@@ -48,10 +49,30 @@
           <div class="mega-menu-status" *ngIf="!isLoadingCategories && !categoriesError && !categories.length">No categories available.</div>
           <ng-container *ngIf="!isLoadingCategories && !categoriesError && categories.length">
             <div class="mega-menu-column" *ngFor="let category of categories">
-              <h3 class="mega-menu-heading" (click)="onCategoryClick(category)">{{ category.name }}</h3>
+              <div class="mega-menu-heading-container">
+                <h3 class="mega-menu-heading" (click)="onCategoryClick(category)">{{ category.name }}</h3>
+                <div class="mega-menu-actions" *ngIf="isAdmin">
+                  <button class="mega-menu-action-btn edit-btn" (click)="openCategoryModal(category); $event.stopPropagation()" title="Edit Category">
+                    <i class="fa-solid fa-pencil"></i>
+                  </button>
+                  <button class="mega-menu-action-btn delete-btn" (click)="confirmDeleteCategory(category, $event)" title="Delete Category">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
               <ng-container *ngIf="getSubCategories(category).length; else noSubCategories">
                 <ul class="mega-menu-list">
-                  <li *ngFor="let sub of getSubCategories(category)" (click)="onSubCategoryClick(sub, category)">{{ sub.name }}</li>
+                  <li *ngFor="let sub of getSubCategories(category)" class="mega-menu-list-item">
+                    <span (click)="onSubCategoryClick(sub, category)">{{ sub.name }}</span>
+                    <div class="mega-menu-actions" *ngIf="isAdmin">
+                      <button class="mega-menu-action-btn edit-btn" (click)="openSubCategoryModal(sub, category.id); $event.stopPropagation()" title="Edit Sub-Category">
+                        <i class="fa-solid fa-pencil"></i>
+                      </button>
+                      <button class="mega-menu-action-btn delete-btn" (click)="confirmDeleteSubCategory(sub, $event)" title="Delete Sub-Category">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                  </li>
                 </ul>
               </ng-container>
               <ng-template #noSubCategories>
@@ -75,7 +96,7 @@
         <span class="crumb active">{{ selectedSubCategoryName }}</span>
       </ng-container>
     </div>
-    <div class="nav-actions">
+    <div class="nav-actions" *ngIf="!isAdmin">
       <button class="contact-button" title="Contact Us" (click)="scrollToContact()">
         <i class="fa-solid fa-phone"></i>
         <span>Contact</span>
@@ -100,8 +121,22 @@
         </div>
       </div>
     </div>
+    <div class="nav-actions" *ngIf="isAdmin">
+      <button class="admin-button" title="Add Category" (click)="openCategoryModal()">
+        <i class="fa-solid fa-folder-plus"></i>
+        <span>Add Category</span>
+      </button>
+      <button class="admin-button" title="Add Sub-Category" (click)="openSubCategoryModal()">
+        <i class="fa-solid fa-folder-tree"></i>
+        <span>Add Sub-Category</span>
+      </button>
+      <button class="admin-button" title="Add Product" (click)="openProductModal()">
+        <i class="fa-solid fa-box"></i>
+        <span>Add Product</span>
+      </button>
+    </div>
   </div>
-  <div class="products-info">
+  <div class="products-info" *ngIf="!isWishlistPage && !isCartPage">
     <div class="products-count">
       {{ productCount }} products found.
     </div>
@@ -121,5 +156,141 @@
         <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
       </select>
     </div>
-  </div>  
+  </div>
+
+  <!-- Admin Modals -->
+  <!-- Category Modal -->
+  <div class="admin-modal-overlay" *ngIf="showCategoryModal" (click)="closeCategoryModal()">
+    <div class="admin-modal" (click)="$event.stopPropagation()">
+      <div class="admin-modal-header">
+        <h2>{{ editingCategoryId ? 'Edit Category' : 'Add New Category' }}</h2>
+        <button class="admin-modal-close" (click)="closeCategoryModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="admin-form-group">
+          <label>Category Name *</label>
+          <input type="text" [(ngModel)]="categoryName" placeholder="Enter category name" class="admin-form-input" />
+        </div>
+        <div class="admin-message" *ngIf="adminMessage" [class.success]="adminMessageType === 'success'" [class.error]="adminMessageType === 'error'">
+          {{ adminMessage }}
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="admin-button-cancel" (click)="closeCategoryModal()">Cancel</button>
+        <button class="admin-button-submit" (click)="submitCategory()">{{ editingCategoryId ? 'Update Category' : 'Create Category' }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-Category Modal -->
+  <div class="admin-modal-overlay" *ngIf="showSubCategoryModal" (click)="closeSubCategoryModal()">
+    <div class="admin-modal" (click)="$event.stopPropagation()">
+      <div class="admin-modal-header">
+        <h2>{{ editingSubCategoryId ? 'Edit Sub-Category' : 'Add New Sub-Category' }}</h2>
+        <button class="admin-modal-close" (click)="closeSubCategoryModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="admin-form-group">
+          <label>Category *</label>
+          <select [(ngModel)]="selectedCategoryId" class="admin-form-input">
+            <option [value]="null">Select a category</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+          </select>
+        </div>
+        <div class="admin-form-group">
+          <label>Sub-Category Name *</label>
+          <input type="text" [(ngModel)]="subCategoryName" placeholder="Enter sub-category name" class="admin-form-input" />
+        </div>
+        <div class="admin-message" *ngIf="adminMessage" [class.success]="adminMessageType === 'success'" [class.error]="adminMessageType === 'error'">
+          {{ adminMessage }}
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="admin-button-cancel" (click)="closeSubCategoryModal()">Cancel</button>
+        <button class="admin-button-submit" (click)="submitSubCategory()">{{ editingSubCategoryId ? 'Update Sub-Category' : 'Create Sub-Category' }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Modal -->
+  <div class="admin-modal-overlay" *ngIf="showProductModal" (click)="closeProductModal()">
+    <div class="admin-modal admin-modal-large" (click)="$event.stopPropagation()">
+      <div class="admin-modal-header">
+        <h2>Add New Product</h2>
+        <button class="admin-modal-close" (click)="closeProductModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>Product Name *</label>
+            <input type="text" [(ngModel)]="productName" placeholder="Enter product name" class="admin-form-input" />
+          </div>
+          <div class="admin-form-group">
+            <label>Reference *</label>
+            <input type="text" [(ngModel)]="productReference" placeholder="Enter product reference" class="admin-form-input" />
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label>Sub-Category *</label>
+            <select [(ngModel)]="selectedSubCategoryId" class="admin-form-input">
+              <option [value]="null">Select a sub-category</option>
+              <option *ngFor="let sub of getAllSubCategories()" [value]="sub.id">{{ sub.name }}</option>
+            </select>
+          </div>
+          <div class="admin-form-group">
+            <label>Price *</label>
+            <input type="number" [(ngModel)]="productPrice" placeholder="0.00" step="0.01" min="0" class="admin-form-input" />
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label>Description *</label>
+          <textarea [(ngModel)]="productDescription" placeholder="Enter product description" rows="4" class="admin-form-input"></textarea>
+        </div>
+        <div class="admin-form-group">
+          <label>Product Image</label>
+          <input type="file" accept="image/*" (change)="onImageSelected($event)" class="admin-form-input" />
+          <div class="admin-image-preview" *ngIf="productImagePreview">
+            <img [src]="productImagePreview" alt="Preview" />
+          </div>
+        </div>
+        <div class="admin-message" *ngIf="adminMessage" [class.success]="adminMessageType === 'success'" [class.error]="adminMessageType === 'error'">
+          {{ adminMessage }}
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="admin-button-cancel" (click)="closeProductModal()">Cancel</button>
+        <button class="admin-button-submit" (click)="submitProduct()">Create Product</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="admin-modal-overlay" *ngIf="showDeleteConfirmModal" (click)="closeDeleteConfirmModal()">
+    <div class="admin-modal admin-modal-small" (click)="$event.stopPropagation()">
+      <div class="admin-modal-header">
+        <h2>Confirm Delete</h2>
+        <button class="admin-modal-close" (click)="closeDeleteConfirmModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="admin-modal-body">
+        <p>Are you sure you want to delete <strong>{{ deleteConfirmName }}</strong>?</p>
+        <p class="admin-warning-text">This action cannot be undone.</p>
+        <div class="admin-message" *ngIf="adminMessage" [class.success]="adminMessageType === 'success'" [class.error]="adminMessageType === 'error'">
+          {{ adminMessage }}
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="admin-button-cancel" (click)="closeDeleteConfirmModal()">Cancel</button>
+        <button class="admin-button-delete" (click)="executeDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
 </div>

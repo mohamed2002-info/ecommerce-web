@@ -1,0 +1,42 @@
+<app-header></app-header>
+
+<div class="wishlist-page">
+  <div class="wishlist-header">
+    <button class="back-button" (click)="goToProducts()">
+      ← Back to products
+    </button>
+    <h2>My Wishlist</h2>
+    <div class="wishlist-actions">
+      <span class="count">{{ wishlistProducts.length }} items</span>
+      <button class="clear-button" (click)="clear()" [disabled]="!wishlistProducts.length">
+        Clear wishlist
+      </button>
+    </div>
+  </div>
+
+  <div class="status" *ngIf="isLoading">Loading wishlist...</div>
+  <div class="status error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="empty-wrapper" *ngIf="!isLoading && isEmpty()">
+    <div class="empty-card">
+      Your wishlist is empty.
+    </div>
+  </div>
+
+  <div class="wishlist-grid" *ngIf="!isLoading && wishlistProducts.length">
+    <div class="wishlist-item" *ngFor="let product of wishlistProducts">
+      <app-product-card
+        [product]="product"
+        (productSelected)="viewProductDetails($event)">
+      </app-product-card>
+    </div>
+  </div>
+
+  <app-product-details
+    *ngIf="selectedProduct"
+    [product]="selectedProduct"
+    (closeModal)="closeProductDetails()">
+  </app-product-details>
+</div>
+<app-footer></app-footer>
+

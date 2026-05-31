@@ -1,0 +1,21 @@
+.home-body {
+    display: flex;
+  }
+  
+  .filter-container {
+    flex: 0 0 300px;
+    padding: 20px;
+  }
+  
+  .products-container {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .products-content {
+    flex: 1;
+    min-height: 0;
+  }
+  

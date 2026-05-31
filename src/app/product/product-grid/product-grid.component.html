@@ -1,46 +1,10 @@
-<div class="product-list">
-  <div *ngFor="let product of products" class="product-list-item" (click)="viewProductDetails(product)">
-    <div class="product-list-actions">
-      <button
-        class="wishlist-toggle"
-        [class.active]="isInWishlist(product.id)"
-        (click)="toggleWishlist($event, product)"
-        *ngIf="!isAdmin">
-        <i class="fa-solid fa-heart"></i>
-      </button>
-      <button
-        class="cart-toggle"
-        [class.active]="isInCart(product.id)"
-        (click)="addToCart($event, product)"
-        *ngIf="!isAdmin">
-        <i class="fa-solid fa-cart-plus"></i>
-      </button>
-      <button
-        class="edit-toggle"
-        (click)="onEditProduct($event, product)"
-        *ngIf="isAdmin"
-        title="Edit Product">
-        <i class="fa-solid fa-pencil"></i>
-      </button>
-      <button
-        class="delete-toggle"
-        (click)="onDeleteProduct($event, product)"
-        *ngIf="isAdmin"
-        title="Delete Product">
-        <i class="fa-solid fa-trash"></i>
-      </button>
-    </div>
-    <div class="product-image">
-      <img [src]="localUrl + product.image_url" alt="Product Image">
-    </div>
-    <div class="product-details">
-      <h3>{{product.name}}</h3>
-      <p class="product-reference">[{{product.reference}}]</p>
-      <p class="description" [title]="product.description">{{product.description}}</p>
-      <div class="product-price">
-        {{product.price}} DT
-      </div>
-    </div>
+<div class="product-grid">
+  <div *ngFor="let product of products" class="product-card-container">
+    <app-product-card 
+      [product]="product" 
+      (productSelected)="viewProductDetails($event)"
+      (editProduct)="onEditProduct($event)"
+      (deleteProduct)="onDeleteProduct($event)"></app-product-card>
   </div>
 </div>
 <app-product-details *ngIf="selectedProduct" [product]="selectedProduct" (closeModal)="closeProductDetails()"></app-product-details>

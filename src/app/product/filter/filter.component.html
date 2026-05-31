@@ -1,0 +1,83 @@
+<div class="filter-container">
+  <div class="filter-header">
+    <h2 class="filter-title">Filter Products</h2>
+    <button class="clear-filters-btn" (click)="clearFilters()" *ngIf="getSelectedCount() > 0">
+      <i class="fa-solid fa-xmark"></i> Clear
+    </button>
+  </div>
+  
+  <form (ngSubmit)="applyFilters()">
+    <div class="filter-section">
+      <div class="section-header">
+        <h3>Price Range</h3>
+        <span class="price-display">{{ currentMaxPrice | number:'1.0-0' }} DT</span>
+      </div>
+      <input 
+        type="range" 
+        class="range" 
+        [min]="minPrice" 
+        [max]="maxPrice" 
+        [value]="currentMaxPrice"
+        step="100"
+        (input)="onPriceChange($event)">
+      <div class="price-values">
+        <span>{{ minPrice | number:'1.0-0' }} DT</span>
+        <span>{{ maxPrice | number:'1.0-0' }} DT</span>
+      </div>
+    </div>
+    
+    <hr />
+    
+    <div class="filter-section">
+      <h3>Brand</h3>
+      <div class="checkbox-group">
+        <label *ngFor="let brand of brands" class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [checked]="brand.checked"
+            (change)="onBrandChange(brand)">
+          <span class="checkbox-text">{{ brand.name }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <hr />
+    
+    <div class="filter-section">
+      <h3>Processor</h3>
+      <div class="checkbox-group">
+        <label *ngFor="let processor of processors" class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [checked]="processor.checked"
+            (change)="onProcessorChange(processor)">
+          <span class="checkbox-text">{{ processor.name }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <hr />
+    
+    <div class="filter-section">
+      <h3>Graphic Card</h3>
+      <div class="checkbox-group">
+        <label *ngFor="let card of graphicCards" class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [checked]="card.checked"
+            (change)="onGraphicCardChange(card)">
+          <span class="checkbox-text">{{ card.name }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="filter-actions">
+      <button type="submit" class="apply-filters-btn">
+        <i class="fa-solid fa-filter"></i> Apply Filters
+        <span class="filter-count" *ngIf="getSelectedCount() > 0">({{ getSelectedCount() }})</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+

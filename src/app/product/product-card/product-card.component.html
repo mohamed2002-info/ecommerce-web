@@ -1,0 +1,27 @@
+<div class="product-card" (click)="onProductClick()">
+  <div class="product-image">
+    <img [src]="localUrl + product.image_url" alt="Product Image">
+    <div class="product-actions">
+      <button class="wishlist-toggle" [class.active]="isInWishlist()" (click)="toggleWishlist($event)" *ngIf="!isAdmin">
+        <i class="fa-solid fa-heart"></i>
+      </button>
+      <button class="cart-toggle" [class.active]="isInCart()" (click)="addToCart($event)" *ngIf="!isAdmin">
+        <i class="fa-solid fa-cart-plus"></i>
+      </button>
+      <button class="edit-toggle" (click)="onEdit($event)" *ngIf="isAdmin" title="Edit Product">
+        <i class="fa-solid fa-pencil"></i>
+      </button>
+      <button class="delete-toggle" (click)="onDelete($event)" *ngIf="isAdmin" title="Delete Product">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+  </div>
+  <div class="product-details">
+    <h3 [title]="product.name">{{product.name}}</h3>
+    <p>[{{product.reference}}]</p>
+    <p class="description" [title]="product.description">{{product.description}}</p>
+    <div class="product-price">
+      {{product.price}} DT
+    </div>
+  </div>
+</div>

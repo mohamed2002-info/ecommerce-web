@@ -1,0 +1,127 @@
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0;
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.items-per-page {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.items-per-page label {
+  font-size: 16px;
+  color: #333;
+}
+
+.items-per-page select {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  background-color: #fff;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.items-per-page select:hover {
+  border-color: #ffc107;
+}
+
+.items-per-page select:focus {
+  outline: none;
+  border-color: #ffc107;
+}
+
+.page-info {
+  font-size: 16px;
+  color: #333;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.page-navigation {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.page-button {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 38px;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.page-button:hover:not(:disabled) {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #fff;
+}
+
+.page-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.page-number {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  color: #333;
+  min-width: 40px;
+  height: 38px;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.page-number:hover {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #fff;
+}
+
+.page-number.active {
+  background-color: #333;
+  border-color: #333;
+  color: #fff;
+  font-weight: bold;
+}
+
+.page-number.active:hover {
+  background-color: #333;
+  border-color: #333;
+}
+

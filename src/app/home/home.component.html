@@ -1,0 +1,15 @@
+<!-- home.component.html -->
+<app-header></app-header>
+
+<div class="home-body">
+  <app-filter class="filter-container"></app-filter>
+  <div class="products-container">
+    <div class="products-content">
+      <app-product-grid *ngIf="viewMode === 'grid'"></app-product-grid>
+      <app-product-list *ngIf="viewMode === 'list'"></app-product-list>
+    </div>
+    <app-pagination></app-pagination>
+  </div>
+</div>
+
+<app-footer></app-footer>

@@ -1,0 +1,49 @@
+<div class="auth-wrapper">
+
+  <!-- LEFT SIDE (full dark background + login form) -->
+  <div class="left-side">
+    <div class="login-area">
+      <h2>Log In</h2>
+
+      <form (ngSubmit)="onSubmit()">
+        <input 
+          type="email" 
+          name="email" 
+          placeholder="Enter email" 
+          [(ngModel)]="email" 
+          required 
+        />
+        <input 
+          type="password" 
+          name="password" 
+          placeholder="Enter password" 
+          [(ngModel)]="password" 
+          required 
+        />
+        <!-- Validation Message Box -->
+      <div *ngIf="message" [ngClass]="messageType" class="message-box">
+        {{ message }}
+      </div>
+        <button class="auth-button" type="submit">Login</button>
+      </form>
+
+      <div class="auth-links">
+        <a [routerLink]="['/forgot-password']">Forgot Password?</a>
+        <a [routerLink]="['/sign-up']">Sign Up</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-side">
+    <div class="welcome-box">
+      <h1>Welcome to All Soft Multimedia</h1>
+
+      <img src="/assets/Img/ASM.png" alt="Website Logo" class="big-logo" />
+
+      <p class="sub-text">
+        Your destination for premium computers, consoles, and digital accessories.
+      </p>
+    </div>
+  </div>
+
+</div>

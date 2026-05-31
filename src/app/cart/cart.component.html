@@ -1,0 +1,101 @@
+<app-header></app-header>
+
+<div class="cart-page">
+  <div class="cart-header">
+    <button class="back-button" (click)="goToProducts()">← Back to products</button>
+    <h2>My Cart</h2>
+    <div class="cart-actions">
+      <span class="count">{{ totalCount }} items</span>
+      <span class="total">Total: {{ totalPrice | number:'1.2-2' }} DT</span>
+      <button class="clear-button" (click)="clear()" [disabled]="!hasItems()">Clear cart</button>
+    </div>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div class="message-container" *ngIf="successMessage || errorMessage">
+    <div class="success-message" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <div class="empty-wrapper" *ngIf="!hasItems()">
+    <div class="empty-card">
+      Your cart is empty.
+    </div>
+  </div>
+
+  <div class="cart-grid" *ngIf="hasItems()">
+    <div class="cart-item" *ngFor="let item of items">
+      <div class="cart-item-body">
+        <div class="thumb">
+          <img [src]="item.product?.image_url ? (localUrl + item.product?.image_url) : ''" alt="Product Image">
+        </div>
+        <div class="info">
+          <div class="title">{{ item.product?.name || 'Product #' + item.id }}</div>
+          <div class="ref">[{{ item.product?.reference || item.id }}]</div>
+          <div class="price">{{ item.product?.price || 0 }} DT</div>
+        </div>
+      </div>
+      <div class="cart-item-footer">
+        <div class="controls">
+          <button (click)="decrement(item)">-</button>
+          <span class="qty">{{ item.quantity }}</span>
+          <button (click)="increment(item)">+</button>
+        </div>
+        <button class="remove" (click)="remove(item)">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Order Button -->
+  <div class="confirm-order-section" *ngIf="hasItems()">
+    <button 
+      class="confirm-order-button" 
+      (click)="openConfirmModal()" 
+      [disabled]="isLoading">
+      <span *ngIf="!isLoading">Confirm Order</span>
+      <span *ngIf="isLoading">Processing...</span>
+    </button>
+  </div>
+</div>
+
+<!-- Order Confirmation Modal -->
+<div class="admin-modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+  <div class="admin-modal admin-modal-small" (click)="$event.stopPropagation()">
+    <div class="admin-modal-header">
+      <h2>Confirm Order</h2>
+      <button class="admin-modal-close" (click)="closeConfirmModal()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+    <div class="admin-modal-body">
+      <div class="confirm-order-content">
+        <p class="confirm-message">Are you sure you want to confirm your order?</p>
+        
+        <div class="order-summary">
+          <div class="summary-row">
+            <span class="summary-label">Total Items:</span>
+            <span class="summary-value">{{ totalCount }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Total Amount:</span>
+            <span class="summary-value total-amount">{{ totalPrice | number:'1.2-2' }} DT</span>
+          </div>
+        </div>
+
+        <p class="email-notice">A confirmation email will be sent to your inbox.</p>
+
+        <div class="modal-actions">
+          <button class="cancel-button" (click)="closeConfirmModal()">Cancel</button>
+          <button class="confirm-button" (click)="confirmOrder()">Confirm Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
+
