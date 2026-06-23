@@ -1,6 +1,6 @@
 // Production environment — used automatically by `ng build` (production config).
-// Replace the placeholder host with your real Render API URL after deploy.
+// Points at the deployed Render API.
 export const environment = {
-  apiUrl: 'https://ecommerce-api.onrender.com/api',
-  localUrl: 'https://ecommerce-api.onrender.com'
+  apiUrl: 'https://ecommerce-api-o3m3.onrender.com/api',
+  localUrl: 'https://ecommerce-api-o3m3.onrender.com'
 };
