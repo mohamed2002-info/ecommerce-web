@@ -1,0 +1,32 @@
+<div class="promo-banner" *ngIf="show && current">
+  <!-- animated scanline / grid backdrop -->
+  <div class="promo-grid" aria-hidden="true"></div>
+  <div class="promo-sheen" aria-hidden="true"></div>
+
+  <div class="promo-banner-inner">
+    <span class="promo-bolt" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span>
+
+    <span class="promo-discount">{{ discountChip(current) }}</span>
+
+    <span class="promo-text">
+      <span class="promo-eyebrow">⚡ LIMITED OFFER</span>
+      <span class="promo-name">
+        {{ current.name }}
+        <span class="promo-desc" *ngIf="current.description">· {{ current.description }}</span>
+      </span>
+    </span>
+
+    <span class="promo-countdown" *ngIf="current.ends_at">
+      <span class="cd-label">ENDS IN</span>
+      <span class="cd-value">{{ current.ends_at | countdown: (tick$ | async) }}</span>
+    </span>
+
+    <span class="promo-dots" *ngIf="promos.length > 1">
+      <span class="dot" *ngFor="let p of promos; let i = index" [class.active]="i === index"></span>
+    </span>
+  </div>
+
+  <button class="promo-close" (click)="dismiss()" aria-label="Dismiss">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+</div>

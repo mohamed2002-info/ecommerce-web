@@ -19,38 +19,38 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-family: var(--font-sans);
 }
 
 .items-per-page label {
   font-size: 16px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .items-per-page select {
   padding: 8px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 16px;
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  background-color: #fff;
+  font-family: var(--font-sans);
+  background-color: var(--color-surface);
   cursor: pointer;
   transition: border-color 0.3s ease;
 }
 
 .items-per-page select:hover {
-  border-color: #ffc107;
+  border-color: var(--color-accent);
 }
 
 .items-per-page select:focus {
   outline: none;
-  border-color: #ffc107;
+  border-color: var(--color-accent);
 }
 
 .page-info {
   font-size: 16px;
-  color: #333;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  color: var(--color-text);
+  font-family: var(--font-sans);
 }
 
 .page-navigation {
@@ -60,26 +60,26 @@
 }
 
 .page-button {
-  background-color: #fff;
-  border: 1px solid #ccc;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 8px 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 14px;
-  color: #333;
+  color: var(--color-text);
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 40px;
   height: 38px;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-family: var(--font-sans);
 }
 
 .page-button:hover:not(:disabled) {
-  background-color: #ffc107;
-  border-color: #ffc107;
-  color: #fff;
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-surface);
 }
 
 .page-button:disabled {
@@ -94,34 +94,34 @@
 }
 
 .page-number {
-  background-color: #fff;
-  border: 1px solid #ccc;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 8px 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 16px;
-  color: #333;
+  color: var(--color-text);
   min-width: 40px;
   height: 38px;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-family: var(--font-sans);
 }
 
 .page-number:hover {
-  background-color: #ffc107;
-  border-color: #ffc107;
-  color: #fff;
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-surface);
 }
 
 .page-number.active {
-  background-color: #333;
-  border-color: #333;
-  color: #fff;
+  background-color: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-surface);
   font-weight: bold;
 }
 
 .page-number.active:hover {
-  background-color: #333;
-  border-color: #333;
+  background-color: var(--color-text);
+  border-color: var(--color-text);
 }
 

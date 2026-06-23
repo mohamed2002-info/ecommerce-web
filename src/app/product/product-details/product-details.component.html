@@ -4,7 +4,10 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
       <div class="product-images">
-        <img [src]="localUrl + product.image_url" alt="Main Product Image" class="main-image">
+        <app-product-3d-viewer
+          [src]="localUrl + product.image_url"
+          [alt]="product.name">
+        </app-product-3d-viewer>
       </div>
       <div class="product-info">
         <h3>{{product.name}}</h3>
@@ -12,8 +15,18 @@
         <p class="product-desc">
           {{product.description}}
         </p>
-        <div class="product-price">
-          <span>{{product.price}} DT</span>
+        <div class="product-price" [class.on-sale]="onSale">
+          <ng-container *ngIf="onSale; else regularDetailPrice">
+            <span class="ds-badge ds-badge--sale">-{{ discountPercent }}%</span>
+            <span class="price-now">{{ price }} {{ currency }}</span>
+            <span class="price-was">{{ original }} {{ currency }}</span>
+            <span class="promo-ends" *ngIf="promoEndsAt">
+              <i class="fa-regular fa-clock"></i> Ends in {{ promoEndsAt | countdown: (tick$ | async) }}
+            </span>
+          </ng-container>
+          <ng-template #regularDetailPrice>
+            <span class="price-now">{{ original }} {{ currency }}</span>
+          </ng-template>
         </div>
         <button class="wishlist-toggle" [class.active]="isInWishlist()" (click)="toggleWishlist()" *ngIf="!isAdmin">
           <i class="fa-solid fa-heart"></i>
@@ -73,6 +86,16 @@
         <div class="admin-form-group">
           <label>Description *</label>
           <textarea [(ngModel)]="productDescription" placeholder="Enter product description" rows="4" class="admin-form-input"></textarea>
+        </div>
+        <div class="admin-form-group" *ngIf="stores.length">
+          <label>Stock per boutique</label>
+          <div class="stock-grid">
+            <div class="stock-row" *ngFor="let s of stores">
+              <span class="stock-store"><i class="fa-solid fa-store"></i> {{ s.city }}</span>
+              <input type="number" min="0" class="admin-form-input stock-input"
+                     [(ngModel)]="productStock[s.id]" placeholder="0" />
+            </div>
+          </div>
         </div>
         <div class="admin-form-group">
           <label>Current Product Image</label>

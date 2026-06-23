@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { UserService } from '../../services/user.service';  // Import the UserService
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -9,37 +9,41 @@ import { Router } from '@angular/router';
 })
 export class ForgotPasswordComponent {
 
-  email: string = '';  // Email input
-  message: string = '';    // Validation message
-  messageType: 'success' | 'error' = 'error';  // Message type (success or error)
+  email: string = '';
+  message: string = '';
+  messageType: 'success' | 'error' = 'error';
+  isSubmitting = false;
 
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
-  // Handle form submission
   onSubmit(): void {
-    if (this.email) {
-      sessionStorage.setItem('emailForReset', this.email);
-      // Call the forgotPassword method from UserService
-      this.userService.forgotPassword({ email: this.email }).subscribe({
-        next: (response: any) => {
-          // Handle successful response (email exists)
-          this.message = 'If the email exists, you will be redirected to the reset password page.';
-          this.messageType = 'success';
-          this.router.navigate(['/reset-password']);  // Redirect to the reset password page
-        },
-        error: (err: any) => {
-          // Handle error response (email not found)
-          if (err.status === 404) {
-            this.message = 'Email address not found. Please check and try again.';
-          } else {
-            this.message = 'An error occurred, please try again.';
-          }
-          this.messageType = 'error';  // Show error message
-        }
-      });
-    } else {
+    if (!this.email) {
       this.message = 'Please enter a valid email address.';
-      this.messageType = 'error';  // Show error if fields are empty
+      this.messageType = 'error';
+      return;
     }
+
+    this.isSubmitting = true;
+    this.auth.forgotPassword({ email: this.email }).subscribe({
+      next: (response: any) => {
+        this.isSubmitting = false;
+        // The backend always returns a generic message (no user enumeration).
+        // For this app it also returns a single-use reset token, which we carry
+        // to the reset page. In production this token would arrive by email.
+        sessionStorage.setItem('emailForReset', this.email);
+        if (response?.reset_token) {
+          sessionStorage.setItem('resetToken', response.reset_token);
+          this.router.navigate(['/reset-password']);
+        } else {
+          this.message = response?.message || 'If the email exists, a reset link has been sent.';
+          this.messageType = 'success';
+        }
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.message = 'An error occurred, please try again.';
+        this.messageType = 'error';
+      }
+    });
   }
 }

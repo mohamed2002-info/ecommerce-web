@@ -7,6 +7,11 @@ import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { SubCategoryService } from '../../services/subcategory.service';
 import { Category, SubCategory } from '../../Models/category.model';
+import { AuthService } from '../../services/auth.service';
+import { StoreService, Store } from '../../services/store.service';
+import { Observable } from 'rxjs';
+import { TickerService } from '../../shared/ticker.service';
+import { CURRENCY, discountPercent, effectivePrice, isOnSale, listPrice } from '../../shared/price.util';
 
 @Component({
   selector: 'app-product-details',
@@ -36,39 +41,39 @@ export class ProductDetailsComponent {
   productImagePreview: string | null = null;
   adminMessage: string = '';
   adminMessageType: 'success' | 'error' = 'success';
+  // Per-store stock for the edit form: { storeId: quantity }
+  stores: Store[] = [];
+  productStock: { [storeId: number]: number } = {};
 
   constructor(
     private wishlistService: WishlistService,
     private cartService: CartService,
     private productService: ProductService,
     private categoryService: CategoryService,
-    private subCategoryService: SubCategoryService
+    private subCategoryService: SubCategoryService,
+    private auth: AuthService,
+    private storeService: StoreService,
+    ticker: TickerService
   ) {
-    this.isAdmin = this.checkIfAdmin();
+    this.tick$ = ticker.tick$;
+    this.isAdmin = this.auth.isAdmin();
     if (this.isAdmin) {
       this.loadCategories();
+      this.storeService.list().subscribe({
+        next: (stores) => (this.stores = stores || []),
+        error: () => (this.stores = [])
+      });
     }
   }
 
-  private checkIfAdmin(): boolean {
-    const role = sessionStorage.getItem('userRole');
-    if (role) {
-      return role.toLowerCase() === 'admin';
-    }
-    const loginResponse = sessionStorage.getItem('loginResponse');
-    if (loginResponse) {
-      try {
-        const parsed = JSON.parse(loginResponse);
-        const userRole = parsed?.user?.role || parsed?.role || parsed?.data?.user?.role || parsed?.data?.role;
-        if (userRole) {
-          return userRole.toLowerCase() === 'admin';
-        }
-      } catch (e) {
-        // ignore parse errors
-      }
-    }
-    return false;
-  }
+  // Promotion display helpers.
+  currency = CURRENCY;
+  tick$: Observable<number>;
+  get onSale(): boolean { return isOnSale(this.product); }
+  get price(): number { return effectivePrice(this.product); }
+  get original(): number { return listPrice(this.product); }
+  get discountPercent(): number { return discountPercent(this.product); }
+  get promoEndsAt(): string | null { return this.product?.promotion?.ends_at ?? null; }
 
   loadCategories(): void {
     this.categoryService.getCategories().subscribe({
@@ -93,6 +98,28 @@ export class ProductDetailsComponent {
     return allSubs;
   }
 
+  /**
+   * Populate the per-store quantity inputs from the product's current stock.
+   * Uses `by_store` (which carries store id/name/qty) directly so it works even
+   * if the separate stores fetch hasn't resolved yet.
+   */
+  private prefillStock(): void {
+    const byStore = this.product.by_store || [];
+
+    // If the stores list hasn't loaded, derive it from by_store so labels show.
+    if (!this.stores.length && byStore.length) {
+      this.stores = byStore.map((b) => ({
+        id: b.store_id, name: b.store, city: b.city, slug: ''
+      }));
+    }
+
+    this.productStock = {};
+    this.stores.forEach((s) => {
+      const row = byStore.find((b) => Number(b.store_id) === Number(s.id));
+      this.productStock[s.id] = row ? Number(row.quantity) : 0;
+    });
+  }
+
   onEdit(): void {
     this.productName = this.product.name;
     this.productReference = this.product.reference;
@@ -101,6 +128,7 @@ export class ProductDetailsComponent {
     this.productDescription = this.product.description;
     this.productImage = null;
     this.productImagePreview = this.product.image_url ? this.localUrl + this.product.image_url : null;
+    this.prefillStock();
     this.showProductModal = true;
     this.adminMessage = '';
   }
@@ -171,6 +199,9 @@ export class ProductDetailsComponent {
     formData.append('sub_category_id', this.selectedSubCategoryId.toString());
     formData.append('price', this.productPrice.toString());
     formData.append('description', this.productDescription.trim());
+    this.stores.forEach((s) => {
+      formData.append(`stock[${s.id}]`, String(this.productStock[s.id] ?? 0));
+    });
     if (this.productImage) {
       formData.append('image', this.productImage);
     }
@@ -179,11 +210,9 @@ export class ProductDetailsComponent {
       next: () => {
         this.adminMessage = 'Product updated successfully!';
         this.adminMessageType = 'success';
-        setTimeout(() => {
-          this.closeProductModal();
-          this.productUpdated.emit();
-          window.location.reload();
-        }, 1500);
+        // Tell the parent to re-fetch (no full page reload).
+        this.productUpdated.emit();
+        setTimeout(() => this.closeProductModal(), 900);
       },
       error: (err) => {
         this.adminMessage = err.error?.message || 'Failed to update product';
@@ -196,8 +225,8 @@ export class ProductDetailsComponent {
     this.productService.deleteProduct(this.product.id).subscribe({
       next: () => {
         this.closeDeleteConfirmModal();
+        this.productUpdated.emit();
         this.closeModal.emit();
-        window.location.reload();
       },
       error: (err) => {
         this.adminMessage = err.error?.message || 'Failed to delete product';

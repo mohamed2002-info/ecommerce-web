@@ -1,0 +1,68 @@
+<!-- Inline viewer -->
+<div class="viewer" [class.fs]="fullscreen">
+  <div
+    #stage
+    class="viewer-stage"
+    [style.transform]="stageTransform"
+    [class.grabbing]="zoom > 1"
+    (pointerenter)="onEnter()"
+    (pointerleave)="onLeave()"
+    (pointermove)="onPointerMove($event)"
+    (pointerdown)="startDrag($event)"
+    (pointerup)="endDrag($event)"
+    (wheel)="onWheel($event)">
+
+    <img class="viewer-img" [src]="src" [alt]="alt"
+         [style.transform]="imageTransform" draggable="false" />
+
+    <!-- glare highlight that follows the cursor -->
+    <div class="viewer-glare"
+         [style.background]="'radial-gradient(circle at ' + glareX + '% ' + glareY + '%, rgba(255,255,255,0.28), transparent 55%)'"
+         [class.show]="hovering"></div>
+
+    <span class="viewer-3d-tag"><i class="fa-solid fa-cube"></i> 3D View</span>
+  </div>
+
+  <!-- controls -->
+  <div class="viewer-controls">
+    <button type="button" (click)="zoomOut()" title="Zoom out" [disabled]="zoom <= 1"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+    <button type="button" (click)="zoomIn()" title="Zoom in" [disabled]="zoom >= 3"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+    <button type="button" (click)="reset()" title="Reset"><i class="fa-solid fa-rotate-left"></i></button>
+    <button type="button" (click)="toggleFullscreen()" [title]="fullscreen ? 'Exit fullscreen' : 'Fullscreen'">
+      <i class="fa-solid" [class.fa-expand]="!fullscreen" [class.fa-compress]="fullscreen"></i>
+    </button>
+  </div>
+
+  <div class="viewer-hint" *ngIf="!fullscreen">Move to rotate · scroll to zoom</div>
+</div>
+
+<!-- Fullscreen lightbox overlay -->
+<div class="viewer-overlay" *ngIf="fullscreen" (click)="toggleFullscreen()">
+  <div class="viewer-overlay-inner" (click)="$event.stopPropagation()">
+    <button class="viewer-overlay-close" (click)="toggleFullscreen()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+
+    <div
+      #stage
+      class="viewer-stage fs-stage"
+      [style.transform]="stageTransform"
+      [class.grabbing]="zoom > 1"
+      (pointerenter)="onEnter()"
+      (pointerleave)="onLeave()"
+      (pointermove)="onPointerMove($event)"
+      (pointerdown)="startDrag($event)"
+      (pointerup)="endDrag($event)"
+      (wheel)="onWheel($event)">
+      <img class="viewer-img" [src]="src" [alt]="alt"
+           [style.transform]="imageTransform" draggable="false" />
+      <div class="viewer-glare"
+           [style.background]="'radial-gradient(circle at ' + glareX + '% ' + glareY + '%, rgba(255,255,255,0.28), transparent 55%)'"
+           [class.show]="hovering"></div>
+    </div>
+
+    <div class="viewer-controls fs-controls">
+      <button type="button" (click)="zoomOut()" title="Zoom out" [disabled]="zoom <= 1"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+      <button type="button" (click)="zoomIn()" title="Zoom in" [disabled]="zoom >= 3"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+      <button type="button" (click)="reset()" title="Reset"><i class="fa-solid fa-rotate-left"></i></button>
+    </div>
+  </div>
+</div>

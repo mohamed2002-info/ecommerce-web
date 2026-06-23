@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
-import { UserService } from '../../services/user.service'; 
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { FilterService } from '../../services/filter.service';
+import { SearchService } from '../../services/search.service';
+import { PaginationService } from '../../services/pagination.service';
 
 @Component({
   selector: 'app-login',
@@ -12,77 +15,53 @@ export class LoginComponent {
   password: string = '';
   message: string = '';
   messageType: 'success' | 'error' = 'error';
+  isSubmitting = false;
 
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private filterService: FilterService,
+    private searchService: SearchService,
+    private paginationService: PaginationService
+  ) {}
 
   onSubmit(): void {
-    if (this.email && this.password) {
-      this.userService.login({ email: this.email, password: this.password }).subscribe({
-        next: (response: any) => {
-          this.message = 'Login successful!';
-          this.messageType = 'success';
-          // Store username in session storage - check multiple possible response structures
-          let username = null;
-          let userId: number | null = null;
-          let userRole: string | null = null;
-          if (response?.username) {
-            username = response.username;
-          } else if (response?.user?.username) {
-            username = response.user.username;
-          } else if (response?.data?.username) {
-            username = response.data.username;
-          } else if (response?.name) {
-            username = response.name;
-          } else if (response?.user?.name) {
-            username = response.user.name;
-          }
-          if (response?.user?.id) {
-            userId = response.user.id;
-          } else if (response?.id) {
-            userId = response.id;
-          } else if (response?.data?.user?.id) {
-            userId = response.data.user.id;
-          }
-          // Extract role from response
-          if (response?.user?.role) {
-            userRole = response.user.role;
-          } else if (response?.role) {
-            userRole = response.role;
-          } else if (response?.data?.user?.role) {
-            userRole = response.data.user.role;
-          } else if (response?.data?.role) {
-            userRole = response.data.role;
-          }
-          
-          if (username) {
-            sessionStorage.setItem('username', username);
-          }
-          if (userId) {
-            sessionStorage.setItem('userId', userId.toString());
-          }
-          if (userRole) {
-            sessionStorage.setItem('userRole', userRole);
-          }
-          
-          // Also store the full response as user object for debugging
-          if (response) {
-            sessionStorage.setItem('loginResponse', JSON.stringify(response));
-          }
-          
-          this.router.navigate(['/home']);
-        },
-        error: (err: any) => {
-          if (err.status === 401) {
-            this.message = err.error?.message || 'Invalid credentials';
-          } else {
-            this.message = 'An error occurred, please try again.';
-          }
-          this.messageType = 'error';
-        }
-      });
-    } else {
+    if (!this.email || !this.password) {
       this.message = 'Please enter your email and password.';
       this.messageType = 'error';
+      return;
     }
+
+    this.isSubmitting = true;
+    this.auth.login({ email: this.email, password: this.password }).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.message = 'Login successful!';
+        this.messageType = 'success';
+
+        // Reset global search/filter/pagination state after login
+        this.filterService.clearFilter();
+        this.searchService.clearSearch();
+        this.searchService.clearCategoryFilter();
+        this.searchService.setSortOption('relevance');
+        this.paginationService.setCurrentPage(1);
+
+        // Return to where the user came from (e.g. /cart for checkout), else home.
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+        this.router.navigateByUrl(returnUrl);
+      },
+      error: (err: any) => {
+        this.isSubmitting = false;
+        if (err.status === 401) {
+          this.message = err.error?.message || 'Invalid credentials';
+        } else if (err.status === 422) {
+          this.message = 'Please enter a valid email and password.';
+        } else {
+          this.message = 'An error occurred, please try again.';
+        }
+        this.messageType = 'error';
+      }
+    });
   }
 }

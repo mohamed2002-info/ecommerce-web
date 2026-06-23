@@ -9,6 +9,8 @@ import { CategoryService } from '../../services/category.service';
 import { SubCategoryService } from '../../services/subcategory.service';
 import { Category, SubCategory } from '../../Models/category.model';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
+import { StoreService, Store } from '../../services/store.service';
 
 @Component({
   selector: 'app-product-grid',
@@ -42,6 +44,9 @@ export class ProductGridComponent implements OnInit, OnDestroy {
   productImagePreview: string | null = null;
   adminMessage: string = '';
   adminMessageType: 'success' | 'error' = 'success';
+  // Per-store stock for the edit form: { storeId: quantity }
+  stores: Store[] = [];
+  productStock: { [storeId: number]: number } = {};
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -50,42 +55,26 @@ export class ProductGridComponent implements OnInit, OnDestroy {
     private searchService: SearchService,
     private filterService: FilterService,
     private categoryService: CategoryService,
-    private subCategoryService: SubCategoryService
+    private subCategoryService: SubCategoryService,
+    private auth: AuthService,
+    private storeService: StoreService
   ) {
-    this.isAdmin = this.checkIfAdmin();
-  }
-
-  private checkIfAdmin(): boolean {
-    const role = sessionStorage.getItem('userRole');
-    if (role) {
-      return role.toLowerCase() === 'admin';
-    }
-    const loginResponse = sessionStorage.getItem('loginResponse');
-    if (loginResponse) {
-      try {
-        const parsed = JSON.parse(loginResponse);
-        const userRole = parsed?.user?.role || parsed?.role || parsed?.data?.user?.role || parsed?.data?.role;
-        if (userRole) {
-          return userRole.toLowerCase() === 'admin';
-        }
-      } catch (e) {
-        // ignore parse errors
-      }
-    }
-    return false;
+    this.isAdmin = this.auth.isAdmin();
+    this.subscriptions.push(
+      this.auth.user$.subscribe(() => (this.isAdmin = this.auth.isAdmin()))
+    );
   }
 
   ngOnInit(): void {
-    // Fetch products when the component initializes
-    this.productService.getProducts().subscribe({
-      next: (response) => {
-        this.allProducts = response;  // Store all products
-        this.applyFilters();
-      },
-      error: (err) => {
-        console.error('Error fetching products:', err);
-      }
-    });
+    this.refreshProducts();
+
+    // Load boutiques for the admin per-store stock inputs.
+    if (this.isAdmin) {
+      this.storeService.list().subscribe({
+        next: (stores) => (this.stores = stores || []),
+        error: () => (this.stores = [])
+      });
+    }
 
     // Subscribe to search changes
     this.searchService.searchTerm$.subscribe(() => {
@@ -124,6 +113,18 @@ export class ProductGridComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(s => s.unsubscribe());
+  }
+
+  /** Re-fetch products from the API and re-apply current filters (fast,
+   *  in-place refresh instead of a full page reload). */
+  refreshProducts(): void {
+    this.productService.getProducts().subscribe({
+      next: (response) => {
+        this.allProducts = response;
+        this.applyFilters();
+      },
+      error: (err) => console.error('Error fetching products:', err)
+    });
   }
 
   loadCategories(): void {
@@ -240,8 +241,22 @@ export class ProductGridComponent implements OnInit, OnDestroy {
     this.productDescription = product.description;
     this.productImage = null;
     this.productImagePreview = product.image_url ? environment.localUrl + product.image_url : null;
+    this.prefillStock(product);
     this.showProductModal = true;
     this.adminMessage = '';
+  }
+
+  /** Fill the per-store quantity inputs from the product's current stock. */
+  private prefillStock(product: Product): void {
+    const byStore = product.by_store || [];
+    if (!this.stores.length && byStore.length) {
+      this.stores = byStore.map((b) => ({ id: b.store_id, name: b.store, city: b.city, slug: '' }));
+    }
+    this.productStock = {};
+    this.stores.forEach((s) => {
+      const row = byStore.find((b) => Number(b.store_id) === Number(s.id));
+      this.productStock[s.id] = row ? Number(row.quantity) : 0;
+    });
   }
 
   onDeleteProduct(product: Product): void {
@@ -313,6 +328,10 @@ export class ProductGridComponent implements OnInit, OnDestroy {
     formData.append('sub_category_id', this.selectedSubCategoryId.toString());
     formData.append('price', this.productPrice.toString());
     formData.append('description', this.productDescription.trim());
+    // Per-store stock as stock[storeId]=qty
+    this.stores.forEach((s) => {
+      formData.append(`stock[${s.id}]`, String(this.productStock[s.id] ?? 0));
+    });
     if (this.productImage) {
       formData.append('image', this.productImage);
     }
@@ -322,10 +341,8 @@ export class ProductGridComponent implements OnInit, OnDestroy {
         next: () => {
           this.adminMessage = 'Product updated successfully!';
           this.adminMessageType = 'success';
-          setTimeout(() => {
-            this.closeProductModal();
-            window.location.reload();
-          }, 1500);
+          this.refreshProducts();
+          setTimeout(() => this.closeProductModal(), 900);
         },
         error: (err) => {
           this.adminMessage = err.error?.message || 'Failed to update product';
@@ -337,10 +354,8 @@ export class ProductGridComponent implements OnInit, OnDestroy {
         next: () => {
           this.adminMessage = 'Product created successfully!';
           this.adminMessageType = 'success';
-          setTimeout(() => {
-            this.closeProductModal();
-            window.location.reload();
-          }, 1500);
+          this.refreshProducts();
+          setTimeout(() => this.closeProductModal(), 900);
         },
         error: (err) => {
           this.adminMessage = err.error?.message || 'Failed to create product';
@@ -352,11 +367,11 @@ export class ProductGridComponent implements OnInit, OnDestroy {
 
   executeDelete(): void {
     if (!this.productToDelete) return;
-    
+
     this.productService.deleteProduct(this.productToDelete.id).subscribe({
       next: () => {
         this.closeDeleteConfirmModal();
-        window.location.reload();
+        this.refreshProducts();
       },
       error: (err) => {
         this.adminMessage = err.error?.message || 'Failed to delete product';

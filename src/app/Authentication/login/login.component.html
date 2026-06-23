@@ -1,30 +1,42 @@
 <div class="auth-wrapper">
 
-  <!-- LEFT SIDE (full dark background + login form) -->
+  <!-- LEFT SIDE (form panel) -->
   <div class="left-side">
     <div class="login-area">
-      <h2>Log In</h2>
+      <h2>Welcome back</h2>
 
       <form (ngSubmit)="onSubmit()">
-        <input 
-          type="email" 
-          name="email" 
-          placeholder="Enter email" 
-          [(ngModel)]="email" 
-          required 
+        <label class="field-label" for="login-email">Email</label>
+        <input
+          id="login-email"
+          type="email"
+          name="email"
+          placeholder="you@example.com"
+          autocomplete="email"
+          [(ngModel)]="email"
+          required
         />
-        <input 
-          type="password" 
-          name="password" 
-          placeholder="Enter password" 
-          [(ngModel)]="password" 
-          required 
+
+        <label class="field-label" for="login-password">Password</label>
+        <input
+          id="login-password"
+          type="password"
+          name="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          [(ngModel)]="password"
+          required
         />
+
         <!-- Validation Message Box -->
-      <div *ngIf="message" [ngClass]="messageType" class="message-box">
-        {{ message }}
-      </div>
-        <button class="auth-button" type="submit">Login</button>
+        <div *ngIf="message" [ngClass]="messageType" class="message-box" role="alert">
+          {{ message }}
+        </div>
+
+        <button class="auth-button" type="submit" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="btn-spinner" aria-hidden="true"></span>
+          {{ isSubmitting ? 'Logging in…' : 'Login' }}
+        </button>
       </form>
 
       <div class="auth-links">
@@ -34,14 +46,13 @@
     </div>
   </div>
 
+  <!-- RIGHT SIDE (welcome) -->
   <div class="right-side">
     <div class="welcome-box">
-      <h1>Welcome to All Soft Multimedia</h1>
-
-      <img src="/assets/Img/ASM.png" alt="Website Logo" class="big-logo" />
+      <div class="auth-brand-name">e-commerce</div>
 
       <p class="sub-text">
-        Your destination for premium computers, consoles, and digital accessories.
+        Your destination for premium products, unbeatable prices, and fast delivery.
       </p>
     </div>
   </div>

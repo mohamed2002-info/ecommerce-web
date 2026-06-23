@@ -1,11 +1,28 @@
 <div class="product-card" (click)="onProductClick()">
-  <div class="product-image">
+  <div class="product-image" [class.dimmed]="!inStock && !isAdmin">
+    <!-- Sale badge (customer-facing) -->
+    <span class="sale-badge" *ngIf="onSale && !isAdmin && inStock">-{{ discountPercent }}%</span>
+    <!-- Out-of-stock overlay -->
+    <span class="oos-badge" *ngIf="!inStock && !isAdmin">Out of stock</span>
+
     <img [src]="localUrl + product.image_url" alt="Product Image">
+
+    <!-- Countdown ribbon when the promotion has an end date.
+         Static (not live-ticking) to avoid re-rendering the whole grid every
+         second; the live countdown lives on the banner + product details. -->
+    <div class="promo-countdown" *ngIf="onSale && !isAdmin && promoEndsAt">
+      <i class="fa-regular fa-clock"></i>
+      <span>{{ promoEndsAt | countdown }}</span>
+    </div>
+
     <div class="product-actions">
-      <button class="wishlist-toggle" [class.active]="isInWishlist()" (click)="toggleWishlist($event)" *ngIf="!isAdmin">
+      <button class="wishlist-toggle" [class.active]="isInWishlist()" (click)="toggleWishlist($event)" *ngIf="!isAdmin" aria-label="Toggle wishlist">
         <i class="fa-solid fa-heart"></i>
       </button>
-      <button class="cart-toggle" [class.active]="isInCart()" (click)="addToCart($event)" *ngIf="!isAdmin">
+      <button class="cart-toggle" [class.active]="isInCart()" (click)="addToCart($event)"
+              *ngIf="!isAdmin" [disabled]="!inStock"
+              [attr.aria-label]="inStock ? 'Add to cart' : 'Out of stock'"
+              [title]="inStock ? 'Add to cart' : 'Out of stock'">
         <i class="fa-solid fa-cart-plus"></i>
       </button>
       <button class="edit-toggle" (click)="onEdit($event)" *ngIf="isAdmin" title="Edit Product">
@@ -18,10 +35,39 @@
   </div>
   <div class="product-details">
     <h3 [title]="product.name">{{product.name}}</h3>
-    <p>[{{product.reference}}]</p>
+    <p class="reference">[{{product.reference}}]</p>
     <p class="description" [title]="product.description">{{product.description}}</p>
-    <div class="product-price">
-      {{product.price}} DT
+
+    <!-- Price: shows original + discounted when on sale -->
+    <div class="product-price" [class.on-sale]="onSale">
+      <ng-container *ngIf="onSale; else regularPrice">
+        <span class="price-now">{{ price }} {{ currency }}</span>
+        <span class="price-was">{{ original }} {{ currency }}</span>
+      </ng-container>
+      <ng-template #regularPrice>
+        <span class="price-now">{{ original }} {{ currency }}</span>
+      </ng-template>
+    </div>
+
+    <!-- Availability -->
+    <div class="availability" *ngIf="!isAdmin">
+      <span class="avail-out" *ngIf="!inStock">
+        <i class="fa-solid fa-circle-xmark"></i> Out of stock
+      </span>
+      <ng-container *ngIf="inStock">
+        <span class="avail-in" [class.low]="lowStock">
+          <i class="fa-solid fa-circle-check"></i>
+          {{ lowStock ? 'Only ' + totalStock + ' left' : 'In stock' }}
+        </span>
+        <span class="avail-stores" *ngIf="availableCities.length">
+          <i class="fa-solid fa-store"></i> {{ availableCities.join(', ') }}
+        </span>
+      </ng-container>
+    </div>
+
+    <!-- Admin: total units across stores -->
+    <div class="availability admin-stock" *ngIf="isAdmin">
+      <i class="fa-solid fa-boxes-stacked"></i> {{ totalStock }} in stock
     </div>
   </div>
 </div>

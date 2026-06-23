@@ -1,63 +1,74 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { UserService } from '../../services/user.service';  // Import the UserService
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-reset-password',
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css']
 })
-export class ResetPasswordComponent {
+export class ResetPasswordComponent implements OnInit {
 
-  email: string = '';  // This will hold the email from sessionStorage
-  newPassword: string = ''; // New password input
-  confirmPassword: string = ''; // Confirm password input
-  message: string = '';  // Validation message
-  messageType: 'success' | 'error' = 'error';  // Message type (success or error)
+  email: string = '';
+  token: string = '';
+  newPassword: string = '';
+  confirmPassword: string = '';
+  message: string = '';
+  messageType: 'success' | 'error' = 'error';
+  isSubmitting = false;
 
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    // Retrieve the email from sessionStorage
     this.email = sessionStorage.getItem('emailForReset') || '';
-    if (!this.email) {
+    this.token = sessionStorage.getItem('resetToken') || '';
+
+    if (!this.email || !this.token) {
       this.message = 'Session expired. Please restart the password reset process.';
       this.messageType = 'error';
-      // Redirect to the forgot password page if email is not available
       this.router.navigate(['/forgot-password']);
     }
   }
 
-  // Handle form submission
   onSubmit(): void {
-    // Validate the passwords
-    if (this.newPassword && this.confirmPassword && this.newPassword === this.confirmPassword) {
-      // Proceed with updating the password
-      this.userService.resetPassword({ email: this.email, password: this.newPassword }).subscribe({
-        next: (response: any) => {
-          this.message = 'Password reset successful!';
-          this.messageType = 'success';
-          // Don't redirect immediately, just show the message
-        },
-        error: (err: any) => {
-          if (err.status === 422 && err.error.errors) {
-            // Display the specific error message from backend validation
-            this.message = err.error.errors.password ? err.error.errors.password[0] : 'An error occurred, please try again.';
-          } else {
-            this.message = 'An error occurred, please try again.';
-          }
-          this.messageType = 'error';
+    if (!this.newPassword || !this.confirmPassword) {
+      this.message = 'Please fill in both password fields.';
+      this.messageType = 'error';
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.message = 'Passwords do not match.';
+      this.messageType = 'error';
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.auth.resetPassword({
+      email: this.email,
+      token: this.token,
+      password: this.newPassword
+    }).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.message = 'Password reset successful! Redirecting to login…';
+        this.messageType = 'success';
+        // Clean up the single-use token from storage.
+        sessionStorage.removeItem('emailForReset');
+        sessionStorage.removeItem('resetToken');
+        setTimeout(() => this.router.navigate(['/login']), 1500);
+      },
+      error: (err: any) => {
+        this.isSubmitting = false;
+        const errors = err?.error?.errors;
+        if (errors?.password) {
+          this.message = errors.password[0];
+        } else if (err?.error?.message) {
+          this.message = err.error.message;
+        } else {
+          this.message = 'An error occurred, please try again.';
         }
-      });
-    } else {
-      // Handle password mismatch or empty fields
-      if (this.newPassword !== this.confirmPassword) {
-        this.message = 'Passwords do not match.';
-        this.messageType = 'error';
-      } else {
-        this.message = 'Please fill in both password fields.';
         this.messageType = 'error';
       }
-    }
+    });
   }
 }

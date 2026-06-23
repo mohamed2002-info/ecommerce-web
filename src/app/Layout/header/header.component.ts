@@ -9,6 +9,9 @@ import { CartService } from '../../services/cart.service';
 import { SubCategoryService } from '../../services/subcategory.service';
 import { ProductService } from '../../services/product.service';
 import { FilterService } from '../../services/filter.service';
+import { AuthService } from '../../services/auth.service';
+import { ThemeService, Theme } from '../../services/theme.service';
+import { StoreService, Store } from '../../services/store.service';
 
 @Component({
   selector: 'app-header',
@@ -33,6 +36,7 @@ export class HeaderComponent implements OnInit {
   isWishlistPage = false;
   isCartPage = false;
   isAdmin: boolean = false;
+  isLoggedIn: boolean = false;
   sortOptions: { value: SortOption; label: string }[] = [
     { value: 'relevance', label: 'Pertinent' },
     { value: 'priceAsc', label: 'Price ↑' },
@@ -77,6 +81,10 @@ export class HeaderComponent implements OnInit {
   productImage: File | null = null;
   productImagePreview: string | null = null;
 
+  // Per-store stock for the product form: { storeId: quantity }
+  stores: Store[] = [];
+  productStock: { [storeId: number]: number } = {};
+
   // Messages
   adminMessage: string = '';
   adminMessageType: 'success' | 'error' = 'success';
@@ -90,8 +98,18 @@ export class HeaderComponent implements OnInit {
     private cartService: CartService,
     private subCategoryService: SubCategoryService,
     private productService: ProductService,
-    private filterService: FilterService
+    private filterService: FilterService,
+    private auth: AuthService,
+    private themeService: ThemeService,
+    private storeService: StoreService
   ) {}
+
+  theme: Theme = 'dark';
+
+  toggleTheme(): void {
+    this.themeService.toggle();
+    this.theme = this.themeService.current;
+  }
 
   ngOnInit(): void {
     // Subscribe to view mode changes
@@ -99,8 +117,21 @@ export class HeaderComponent implements OnInit {
       this.viewMode = mode;
     });
 
-    this.userEmail = this.getUserEmail();
-    this.isAdmin = this.checkIfAdmin();
+    // Keep the theme toggle icon in sync.
+    this.themeService.theme$.subscribe((t) => (this.theme = t));
+
+    // Load boutiques for the admin product form's per-store stock inputs.
+    this.storeService.list().subscribe({
+      next: (stores) => (this.stores = stores || []),
+      error: () => (this.stores = [])
+    });
+
+    // Keep identity-derived UI in sync with the auth state.
+    this.auth.user$.subscribe((user) => {
+      this.userEmail = user?.email || '';
+      this.isAdmin = user?.role?.toLowerCase() === 'admin';
+      this.isLoggedIn = !!user;
+    });
     this.loadCategories();
     this.syncBreadcrumbFromFilter(this.searchService.getCategoryFilter());
 
@@ -129,8 +160,6 @@ export class HeaderComponent implements OnInit {
         const url = event.urlAfterRedirects;
         this.isWishlistPage = url.includes('/wishlist');
         this.isCartPage = url.includes('/cart');
-        // Refresh role check on navigation in case user logged in/out
-        this.isAdmin = this.checkIfAdmin();
       }
     });
     const currentUrl = this.router.url;
@@ -146,33 +175,23 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/cart']);
   }
 
+  goToPromotions(): void {
+    this.showUserMenu = false;
+    this.router.navigate(['/admin/promotions']);
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+
   setViewMode(mode: 'grid' | 'list'): void {
     this.viewService.setViewMode(mode);
   }
 
   getUserInitial(): string {
-    // Try multiple possible keys for username
-    let username = sessionStorage.getItem('username');
-    if (!username) {
-      username = sessionStorage.getItem('userName');
-    }
-    if (!username) {
-      username = sessionStorage.getItem('name');
-    }
-    if (!username) {
-      // Try to parse user object if stored as JSON
-      const userStr = sessionStorage.getItem('user');
-      if (userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          username = user.username || user.name || user.userName;
-        } catch (e) {
-          // Ignore parse errors
-        }
-      }
-    }
-    if (username && username.length > 0) {
-      return username.charAt(0).toUpperCase();
+    const name = this.auth.getUser()?.name;
+    if (name && name.length > 0) {
+      return name.charAt(0).toUpperCase();
     }
     return 'U';
   }
@@ -201,11 +220,13 @@ export class HeaderComponent implements OnInit {
   }
 
   logout(): void {
-    sessionStorage.clear();
     this.showUserMenu = false;
     // Clear filters on logout
     this.filterService.clearFilter();
-    this.router.navigate(['/login']);
+    // Revoke the server-side token, clear local auth state, then redirect.
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']);
+    });
   }
 
   scrollToContact(): void {
@@ -333,75 +354,6 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  private getUserEmail(): string {
-    // Try common storage keys first
-    let email =
-      sessionStorage.getItem('email') ||
-      sessionStorage.getItem('userEmail') ||
-      sessionStorage.getItem('mail');
-
-    if (email) {
-      return email;
-    }
-
-    // Try to parse loginResponse if present
-    const loginResponse = sessionStorage.getItem('loginResponse');
-    if (loginResponse) {
-      try {
-        const parsed = JSON.parse(loginResponse);
-        email =
-          parsed?.email ||
-          parsed?.user?.email ||
-          parsed?.data?.email ||
-          parsed?.user?.mail;
-        if (email) {
-          return email;
-        }
-      } catch (e) {
-        // ignore parse errors
-      }
-    }
-
-    // Fallback: if username looks like an email, use it
-    const usernameLikeEmail =
-      sessionStorage.getItem('username') ||
-      sessionStorage.getItem('userName') ||
-      sessionStorage.getItem('name');
-    if (usernameLikeEmail && usernameLikeEmail.includes('@')) {
-      return usernameLikeEmail;
-    }
-
-    return '';
-  }
-
-  private checkIfAdmin(): boolean {
-    // Check sessionStorage for role
-    const role = sessionStorage.getItem('userRole');
-    if (role) {
-      return role.toLowerCase() === 'admin';
-    }
-
-    // Try to parse loginResponse if present
-    const loginResponse = sessionStorage.getItem('loginResponse');
-    if (loginResponse) {
-      try {
-        const parsed = JSON.parse(loginResponse);
-        const userRole =
-          parsed?.user?.role ||
-          parsed?.role ||
-          parsed?.data?.user?.role ||
-          parsed?.data?.role;
-        if (userRole) {
-          return userRole.toLowerCase() === 'admin';
-        }
-      } catch (e) {
-        // ignore parse errors
-      }
-    }
-
-    return false;
-  }
-
   // Admin modal methods
   openCategoryModal(category?: Category): void {
     if (category) {
@@ -452,6 +404,8 @@ export class HeaderComponent implements OnInit {
     this.productDescription = '';
     this.productImage = null;
     this.productImagePreview = null;
+    this.productStock = {};
+    this.stores.forEach((s) => (this.productStock[s.id] = 0));
     this.showProductModal = true;
     this.adminMessage = '';
   }
@@ -603,6 +557,11 @@ export class HeaderComponent implements OnInit {
     formData.append('sub_category_id', this.selectedSubCategoryId.toString());
     formData.append('price', this.productPrice.toString());
     formData.append('description', this.productDescription.trim());
+    // Per-store stock as stock[storeId]=qty
+    this.stores.forEach((s) => {
+      const qty = this.productStock[s.id] ?? 0;
+      formData.append(`stock[${s.id}]`, String(qty));
+    });
     if (this.productImage) {
       formData.append('image', this.productImage);
     }

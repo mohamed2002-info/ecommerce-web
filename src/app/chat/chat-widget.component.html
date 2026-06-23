@@ -1,0 +1,42 @@
+<!-- Floating launcher button -->
+<button class="chat-fab" (click)="toggle()" [class.open]="open"
+        [attr.aria-label]="open ? 'Close assistant' : 'Open shopping assistant'">
+  <i class="fa-solid" [class.fa-comment-dots]="!open" [class.fa-xmark]="open"></i>
+</button>
+
+<!-- Chat panel -->
+<div class="chat-panel" *ngIf="open">
+  <div class="chat-header">
+    <div class="chat-title">
+      <span class="bot-avatar"><i class="fa-solid fa-robot"></i></span>
+      <div>
+        <strong>TechBot</strong>
+        <span class="chat-subtitle">Shopping assistant</span>
+      </div>
+    </div>
+    <button class="chat-close" (click)="toggle()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <div class="chat-messages">
+    <div class="chat-msg" *ngFor="let m of messages" [class.user]="m.role === 'user'" [class.bot]="m.role === 'assistant'">
+      <div class="bubble">{{ m.text }}</div>
+    </div>
+    <div class="chat-msg bot" *ngIf="loading">
+      <div class="bubble typing">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <textarea
+      [(ngModel)]="input"
+      (keydown)="onKeydown($event)"
+      placeholder="Ask me to compare or recommend a product…"
+      rows="1"
+      [disabled]="loading"></textarea>
+    <button class="chat-send" (click)="send()" [disabled]="loading || !input.trim()" aria-label="Send">
+      <i class="fa-solid fa-paper-plane"></i>
+    </button>
+  </div>
+</div>

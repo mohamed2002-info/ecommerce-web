@@ -7,7 +7,7 @@
       (deleteProduct)="onDeleteProduct($event)"></app-product-card>
   </div>
 </div>
-<app-product-details *ngIf="selectedProduct" [product]="selectedProduct" (closeModal)="closeProductDetails()"></app-product-details>
+<app-product-details *ngIf="selectedProduct" [product]="selectedProduct" (closeModal)="closeProductDetails()" (productUpdated)="refreshProducts()"></app-product-details>
 
 <!-- Product Edit Modal -->
 <div class="admin-modal-overlay" *ngIf="showProductModal" (click)="closeProductModal()">
@@ -45,6 +45,16 @@
       <div class="admin-form-group">
         <label>Description *</label>
         <textarea [(ngModel)]="productDescription" placeholder="Enter product description" rows="4" class="admin-form-input"></textarea>
+      </div>
+      <div class="admin-form-group" *ngIf="stores.length">
+        <label>Stock per boutique</label>
+        <div class="stock-grid">
+          <div class="stock-row" *ngFor="let s of stores">
+            <span class="stock-store"><i class="fa-solid fa-store"></i> {{ s.city }}</span>
+            <input type="number" min="0" class="admin-form-input stock-input"
+                   [(ngModel)]="productStock[s.id]" placeholder="0" />
+          </div>
+        </div>
       </div>
       <div class="admin-form-group" *ngIf="!editingProductId">
         <label>Product Image</label>

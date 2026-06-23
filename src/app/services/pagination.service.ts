@@ -5,7 +5,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class PaginationService {
-  private itemsPerPageSubject = new BehaviorSubject<number>(10);
+  private itemsPerPageSubject = new BehaviorSubject<number>(14);
   private currentPageSubject = new BehaviorSubject<number>(1);
   private totalItemsSubject = new BehaviorSubject<number>(0);
   
@@ -18,7 +18,7 @@ export class PaginationService {
     const savedItemsPerPage = sessionStorage.getItem('itemsPerPage');
     if (savedItemsPerPage) {
       const itemsPerPage = parseInt(savedItemsPerPage, 10);
-      if ([10, 25, 50].includes(itemsPerPage)) {
+      if ([14, 25, 50].includes(itemsPerPage)) {
         this.itemsPerPageSubject.next(itemsPerPage);
       }
     }
@@ -30,7 +30,7 @@ export class PaginationService {
   }
 
   setItemsPerPage(items: number): void {
-    if ([10, 25, 50].includes(items)) {
+    if ([14, 25, 50].includes(items)) {
       this.itemsPerPageSubject.next(items);
       sessionStorage.setItem('itemsPerPage', items.toString());
       // Reset to page 1 when changing items per page

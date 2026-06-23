@@ -6,7 +6,8 @@
     <h2>My Cart</h2>
     <div class="cart-actions">
       <span class="count">{{ totalCount }} items</span>
-      <span class="total">Total: {{ totalPrice | number:'1.2-2' }} DT</span>
+      <span class="savings" *ngIf="totalSavings > 0">You save {{ totalSavings | number:'1.2-2' }} {{ currency }}</span>
+      <span class="total">Total: {{ totalPrice | number:'1.2-2' }} {{ currency }}</span>
       <button class="clear-button" (click)="clear()" [disabled]="!hasItems()">Clear cart</button>
     </div>
   </div>
@@ -34,9 +35,16 @@
           <img [src]="item.product?.image_url ? (localUrl + item.product?.image_url) : ''" alt="Product Image">
         </div>
         <div class="info">
-          <div class="title">{{ item.product?.name || 'Product #' + item.id }}</div>
+          <div class="title">
+            {{ item.product?.name || 'Product #' + item.id }}
+            <span class="ds-badge ds-badge--sale" *ngIf="isOnSale(item)">Sale</span>
+          </div>
           <div class="ref">[{{ item.product?.reference || item.id }}]</div>
-          <div class="price">{{ item.product?.price || 0 }} DT</div>
+          <div class="price" [class.on-sale]="isOnSale(item)">
+            <span class="price-now">{{ unitPrice(item) | number:'1.2-2' }} {{ currency }}</span>
+            <span class="price-was" *ngIf="isOnSale(item)">{{ originalUnitPrice(item) | number:'1.2-2' }} {{ currency }}</span>
+            <span class="line-total">· {{ lineTotal(item) | number:'1.2-2' }} {{ currency }}</span>
+          </div>
         </div>
       </div>
       <div class="cart-item-footer">
@@ -79,6 +87,10 @@
           <div class="summary-row">
             <span class="summary-label">Total Items:</span>
             <span class="summary-value">{{ totalCount }}</span>
+          </div>
+          <div class="summary-row" *ngIf="totalSavings > 0">
+            <span class="summary-label">Promotions Saved:</span>
+            <span class="summary-value savings-amount">−{{ totalSavings | number:'1.2-2' }} DT</span>
           </div>
           <div class="summary-row">
             <span class="summary-label">Total Amount:</span>

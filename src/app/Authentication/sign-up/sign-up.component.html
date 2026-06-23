@@ -1,22 +1,36 @@
 <div class="auth-wrapper">
 
-  <!-- LEFT SIDE (full dark background + sign-up form) -->
+  <!-- LEFT SIDE (form panel) -->
   <div class="left-side">
     <div class="login-area">
-      <h2>Sign Up</h2>
+      <h2>Create your account</h2>
 
       <form (ngSubmit)="onSubmit()">
-        <input type="text" name="name" placeholder="Enter name" [(ngModel)]="name" required />
-        <input type="email" name="email" placeholder="Enter email" [(ngModel)]="email" required />
-        <input type="password" name="password" placeholder="Enter password" [(ngModel)]="password" required />
-        <input type="password" name="password_confirmation" placeholder="Confirm password" [(ngModel)]="passwordConfirmation" required />
+        <label class="field-label" for="signup-name">Name</label>
+        <input id="signup-name" type="text" name="name" placeholder="Your name"
+          autocomplete="name" [(ngModel)]="name" required />
+
+        <label class="field-label" for="signup-email">Email</label>
+        <input id="signup-email" type="email" name="email" placeholder="you@example.com"
+          autocomplete="email" [(ngModel)]="email" required />
+
+        <label class="field-label" for="signup-password">Password</label>
+        <input id="signup-password" type="password" name="password" placeholder="At least 6 characters"
+          autocomplete="new-password" [(ngModel)]="password" required />
+
+        <label class="field-label" for="signup-confirm">Confirm password</label>
+        <input id="signup-confirm" type="password" name="password_confirmation" placeholder="Re-enter your password"
+          autocomplete="new-password" [(ngModel)]="passwordConfirmation" required />
 
         <!-- Validation Message Box -->
-        <div *ngIf="message" [ngClass]="messageType" class="message-box">
+        <div *ngIf="message" [ngClass]="messageType" class="message-box" role="alert">
           {{ message }}
         </div>
 
-        <button class="auth-button" type="submit">Create Account</button>
+        <button class="auth-button" type="submit" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="btn-spinner" aria-hidden="true"></span>
+          {{ isSubmitting ? 'Creating account…' : 'Create Account' }}
+        </button>
       </form>
 
       <div class="auth-links">
@@ -25,15 +39,13 @@
     </div>
   </div>
 
-  <!-- RIGHT SIDE (welcome message + logo + sub-message) -->
+  <!-- RIGHT SIDE (welcome) -->
   <div class="right-side">
     <div class="welcome-box">
-      <h1>Welcome to All Soft Multimedia</h1>
-
-      <img src="/assets/Img/ASM.png" alt="Website Logo" class="big-logo" />
+      <div class="auth-brand-name">e-commerce</div>
 
       <p class="sub-text">
-        Your destination for premium computers, consoles, and digital accessories.
+        Your destination for premium products, unbeatable prices, and fast delivery.
       </p>
     </div>
   </div>

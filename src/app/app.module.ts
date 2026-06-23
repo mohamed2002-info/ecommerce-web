@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -21,6 +22,11 @@ import { PaginationComponent } from './product/pagination/pagination.component';
 import { WishlistComponent } from './wishlist/wishlist.component';
 import { CartService } from './services/cart.service';
 import { CartComponent } from './cart/cart.component';
+import { CountdownPipe } from './shared/countdown.pipe';
+import { AdminPromotionsComponent } from './admin/promotions/promotions.component';
+import { ChatWidgetComponent } from './chat/chat-widget.component';
+import { PromoBannerComponent } from './Layout/promo-banner/promo-banner.component';
+import { Product3dViewerComponent } from './shared/product-3d-viewer/product-3d-viewer.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +45,12 @@ import { CartComponent } from './cart/cart.component';
     ProductListComponent,
     PaginationComponent,
     WishlistComponent,
-    CartComponent
+    CartComponent,
+    CountdownPipe,
+    AdminPromotionsComponent,
+    ChatWidgetComponent,
+    PromoBannerComponent,
+    Product3dViewerComponent
   ],
   imports: [
     BrowserModule,
@@ -47,7 +58,9 @@ import { CartComponent } from './cart/cart.component';
     FormsModule,
     HttpClientModule  
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

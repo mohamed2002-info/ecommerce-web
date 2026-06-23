@@ -4,8 +4,10 @@ import { CartService } from '../services/cart.service';
 import { Product } from '../Models/product.model';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
+import { CURRENCY, effectivePrice, isOnSale, listPrice } from '../shared/price.util';
+import { AuthService } from '../services/auth.service';
 
-type CartItem = { id: number; quantity: number; product?: Product };
+type CartItem = { id: number; quantity: number; product?: Product; unitPrice?: number };
 
 @Component({
   selector: 'app-cart',
@@ -16,6 +18,7 @@ export class CartComponent implements OnInit, OnDestroy {
   items: CartItem[] = [];
   private subscriptions: Subscription[] = [];
   localUrl = environment.localUrl;
+  currency = CURRENCY;
   successMessage: string = '';
   errorMessage: string = '';
   isLoading: boolean = false;
@@ -23,7 +26,8 @@ export class CartComponent implements OnInit, OnDestroy {
 
   constructor(
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -65,8 +69,37 @@ export class CartComponent implements OnInit, OnDestroy {
     return this.items.reduce((sum, i) => sum + i.quantity, 0);
   }
 
+  /** Unit price actually charged for a line (promotion-aware). */
+  unitPrice(item: CartItem): number {
+    // Prefer the server-computed unit price; fall back to the product pricing.
+    return item.unitPrice ?? effectivePrice(item.product);
+  }
+
+  /** Original unit price, for showing a struck-through "was" price. */
+  originalUnitPrice(item: CartItem): number {
+    return listPrice(item.product);
+  }
+
+  lineTotal(item: CartItem): number {
+    return this.round(this.unitPrice(item) * item.quantity);
+  }
+
+  isOnSale(item: CartItem): boolean {
+    return isOnSale(item.product);
+  }
+
   get totalPrice(): number {
-    return this.items.reduce((sum, i) => sum + (i.product?.price || 0) * i.quantity, 0);
+    return this.round(this.items.reduce((sum, i) => sum + this.unitPrice(i) * i.quantity, 0));
+  }
+
+  /** Total amount saved across the cart from active promotions. */
+  get totalSavings(): number {
+    const original = this.items.reduce((sum, i) => sum + this.originalUnitPrice(i) * i.quantity, 0);
+    return this.round(original - this.totalPrice);
+  }
+
+  private round(n: number): number {
+    return Math.round(n * 100) / 100;
   }
 
   hasItems(): boolean {
@@ -77,6 +110,12 @@ export class CartComponent implements OnInit, OnDestroy {
     if (!this.hasItems()) {
       this.errorMessage = 'Your cart is empty. Please add items before confirming your order.';
       setTimeout(() => this.errorMessage = '', 5000);
+      return;
+    }
+    // Checkout requires an account. Send guests to login, then back to the cart
+    // (the guest cart is merged into their account on login).
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/cart' } });
       return;
     }
     this.showConfirmModal = true;

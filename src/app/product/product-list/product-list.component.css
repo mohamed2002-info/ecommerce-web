@@ -7,8 +7,8 @@
 
 .product-list-item {
   display: flex;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -22,7 +22,7 @@
 
 .product-list-item:hover {
   transform: translateX(5px);
-  border-color: #ffc107;
+  border-color: var(--color-accent);
 }
 
 .product-image {
@@ -31,7 +31,7 @@
   height: 200px;
   overflow: hidden;
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: var(--color-surface-low);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,23 +60,23 @@
 .product-details h3 {
   font-size: 18px;
   margin: 0 0 8px 0;
-  color: #333;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  color: var(--color-text);
+  font-family: var(--font-sans);
 }
 
 .product-reference {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0 0 10px 0;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-family: var(--font-sans);
 }
 
 .description {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0 0 10px 0;
   line-height: 1.5;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-family: var(--font-sans);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -88,14 +88,14 @@
 .product-price {
   font-size: 18px;
   font-weight: bold;
-  color: #333;
+  color: var(--color-text);
   margin-top: 15px;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-family: var(--font-sans);
 }
 
 .wishlist-toggle {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -104,20 +104,20 @@
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 14px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .wishlist-toggle.active {
-  background: #ffe6e6;
-  border-color: #ff6b6b;
-  color: #ff6b6b;
+  background: var(--color-sale-soft);
+  border-color: var(--color-sale);
+  color: var(--color-sale);
 }
 
 .cart-toggle {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -126,15 +126,15 @@
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 14px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .cart-toggle.active {
-  background: #e6f7ff;
-  border-color: #4da3ff;
-  color: #1e88e5;
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent-strong);
 }
 
 .product-list-actions {
@@ -149,7 +149,7 @@
 
 .edit-toggle {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -158,21 +158,21 @@
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
-  color: #0066cc;
+  color: var(--color-accent);
   font-size: 14px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .edit-toggle:hover {
-  background: #e6f2ff;
-  border-color: #0066cc;
-  color: #004c99;
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent-strong);
   box-shadow: 0 2px 6px rgba(0, 102, 204, 0.3);
 }
 
 .delete-toggle {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -181,15 +181,15 @@
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
-  color: #e74c3c;
+  color: var(--color-danger);
   font-size: 14px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .delete-toggle:hover {
-  background: #ffe6e6;
-  border-color: #e74c3c;
-  color: #c0392b;
+  background: var(--color-sale-soft);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
   box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
 }
 

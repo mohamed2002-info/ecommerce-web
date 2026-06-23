@@ -1,0 +1,184 @@
+/* ============================================================
+   Pseudo-3D product viewer — token-driven, light/dark aware.
+   ============================================================ */
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.viewer {
+  position: relative;
+  width: 100%;
+  perspective: 1000px;
+}
+
+.viewer-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 260px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 35%, var(--color-surface-2), var(--color-surface-low));
+  border: 1px solid var(--color-border);
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease-out, box-shadow var(--transition);
+  cursor: crosshair;
+  box-shadow: var(--shadow-md);
+}
+
+.viewer-stage.grabbing { cursor: grab; }
+.viewer-stage.grabbing:active { cursor: grabbing; }
+
+.viewer-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8%;
+  transition: transform 0.08s ease-out;
+  will-change: transform;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* moving highlight for a glossy "real object" feel */
+.viewer-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition);
+  mix-blend-mode: screen;
+}
+
+.viewer-glare.show { opacity: 1; }
+
+.viewer-3d-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+}
+
+/* controls */
+.viewer-controls {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 4;
+}
+
+.viewer-controls button {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.viewer-controls button:hover:not(:disabled) {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border-color: var(--color-accent);
+}
+
+.viewer-controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.viewer-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* ---- Fullscreen overlay ---- */
+.viewer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  background: rgba(8, 12, 24, 0.88);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  animation: viewer-fade 0.2s ease;
+}
+
+@keyframes viewer-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.viewer-overlay-inner {
+  position: relative;
+  width: min(820px, 92vw);
+  max-height: 90vh;
+  perspective: 1200px;
+}
+
+.fs-stage {
+  aspect-ratio: 4 / 3;
+  max-height: 80vh;
+  background: radial-gradient(circle at 50% 35%, #1b2030, #0d0f17);
+}
+
+.viewer-overlay-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 5;
+  box-shadow: var(--shadow-lg);
+}
+
+.viewer-overlay-close:hover { color: var(--color-sale); }
+
+.fs-controls {
+  position: static;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewer-stage, .viewer-img { transition: none; }
+}
+
+@media (max-width: 600px) {
+  .viewer-hint { display: none; }
+}

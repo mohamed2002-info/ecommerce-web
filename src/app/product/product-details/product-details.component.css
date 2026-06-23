@@ -13,7 +13,7 @@
   
   .detailed-product-card {
     display: flex;
-    background: #ffffff;
+    background: var(--color-surface);
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     padding: 30px;
@@ -30,9 +30,9 @@
     position: absolute;
     top: 10px;
     right: 10px;
-  background: #fff;
-  color: #333;
-  border: 1px solid #ccc;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
   border-radius: 50%;
   width: 34px;
   height: 34px;
@@ -46,8 +46,8 @@
   }
   
   .close-button:hover {
-  color: #e74c3c;
-  border-color: #e74c3c;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
   box-shadow: 0 3px 8px rgba(231, 76, 60, 0.25);
   }
   .close-button:active {
@@ -55,14 +55,19 @@
   }
   
   .product-images {
-    width: 40%;
+    width: 42%;
+    flex-shrink: 0;
     padding-right: 20px;
-    border-right: 1px solid #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    border-right: 1px solid var(--color-border);
+    display: block;
   }
-  
+
+  /* Make the embedded 3D viewer fill the image column. */
+  .product-images app-product-3d-viewer {
+    display: block;
+    width: 100%;
+  }
+
   .main-image {
     width: 100%;
     height: auto;
@@ -82,21 +87,21 @@
   
   .product-info h3 {
     font-size: 28px;
-    color: #333;
+    color: var(--color-text);
     margin-bottom: 15px;
     flex-shrink: 0;
   }
   
   .product-info .product-ref {
     font-size: 16px;
-    color: #777;
+    color: var(--color-text-muted);
     margin-bottom: 10px;
     flex-shrink: 0;
   }
   
   .product-info .product-desc {
     font-size: 16px;
-    color: #555;
+    color: var(--color-text-muted);
     line-height: 1.5;
     margin-bottom: 20px;
     word-wrap: break-word;
@@ -110,7 +115,7 @@
   .product-info .product-price {
     font-size: 22px;
     font-weight: bold;
-    color: #d35400;
+    color: var(--color-accent-strong);
     margin-bottom: 40px;
   }
   
@@ -123,32 +128,32 @@
   .delete-button {
     border: none;
     border-radius: 25px;
-    color: white;
+    color: var(--color-surface);
     padding: 15px 30px;
     cursor: pointer;
-    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-family: var(--font-sans);
     font-size: 16px;
     transition: background-color 0.3s ease;
   }
   
   .delete-button {
-    background-color: #e74c3c;
+    background-color: var(--color-danger);
   }
   
   .modify-button:hover {
-    background-color: #e67e22;
+    background-color: var(--color-accent-strong);
   }
   
   .modify-button:active {
-    background-color: #d35400;
+    background-color: var(--color-accent-strong);
   }
   
   .delete-button:hover {
-    background-color: #c0392b;
+    background-color: var(--color-danger);
   }
   
   .delete-button:active {
-    background-color: #a93226;
+    background-color: var(--color-danger);
   }
 
   .wishlist-toggle {
@@ -156,18 +161,18 @@
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
     border-radius: 8px;
-    background: #fff;
-    color: #555;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
     cursor: pointer;
     transition: background 0.2s, color 0.2s, border-color 0.2s;
   }
 
   .wishlist-toggle.active {
-    background: #ffe6e6;
-    border-color: #ff6b6b;
-    color: #ff6b6b;
+    background: var(--color-sale-soft);
+    border-color: var(--color-sale);
+    color: var(--color-sale);
   }
 
   .cart-toggle {
@@ -175,19 +180,19 @@
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
     border-radius: 8px;
-    background: #fff;
-    color: #555;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
     cursor: pointer;
     transition: background 0.2s, color 0.2s, border-color 0.2s;
     margin-top: 10px;
   }
 
   .cart-toggle.active {
-    background: #e6f7ff;
-    border-color: #4da3ff;
-    color: #1e88e5;
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent);
+    color: var(--color-accent-strong);
   }
 
   .admin-actions {
@@ -201,19 +206,19 @@
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    border: 1px solid #0066cc;
+    border: 1px solid var(--color-accent);
     border-radius: 8px;
-    background: #fff;
-    color: #0066cc;
+    background: var(--color-surface);
+    color: var(--color-accent);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
-    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-family: var(--font-sans);
     font-size: 14px;
   }
 
   .edit-button:hover {
-    background: #e6f2ff;
-    color: #004c99;
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
   }
 
   .delete-button {
@@ -221,18 +226,18 @@
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    border: 1px solid #e74c3c;
+    border: 1px solid var(--color-danger);
     border-radius: 8px;
-    background: #fff;
-    color: #e74c3c;
+    background: var(--color-surface);
+    color: var(--color-danger);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
-    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-family: var(--font-sans);
     font-size: 14px;
   }
 
   .delete-button:hover {
-    background: #ffe6e6;
-    color: #c0392b;
+    background: var(--color-sale-soft);
+    color: var(--color-danger);
   }
   

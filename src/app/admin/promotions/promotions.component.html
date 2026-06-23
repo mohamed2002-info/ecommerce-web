@@ -1,0 +1,188 @@
+<app-header></app-header>
+
+<div class="promo-page">
+  <div class="promo-header">
+    <button class="ds-btn ds-btn--ghost" (click)="goBack()">← Back</button>
+    <h2>Promotion Management</h2>
+    <button class="ds-btn ds-btn--primary" (click)="openCreate()">
+      <i class="fa-solid fa-plus"></i> New Promotion
+    </button>
+  </div>
+
+  <div class="promo-loading" *ngIf="isLoading">Loading promotions…</div>
+  <div class="promo-error" *ngIf="loadError">{{ loadError }}</div>
+
+  <div class="promo-empty" *ngIf="!isLoading && !loadError && promotions.length === 0">
+    No promotions yet. Create your first one to start offering discounts.
+  </div>
+
+  <div class="promo-table-wrap" *ngIf="!isLoading && promotions.length > 0">
+    <table class="promo-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Discount</th>
+          <th>Target</th>
+          <th>Window</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let promo of promotions">
+          <td>
+            <div class="promo-name">{{ promo.name }}</div>
+            <div class="promo-desc" *ngIf="promo.description">{{ promo.description }}</div>
+          </td>
+          <td>{{ discountLabel(promo) }}</td>
+          <td>{{ targetLabel(promo) }}</td>
+          <td class="window-cell">
+            <span *ngIf="promo.starts_at">{{ promo.starts_at | date:'MMM d, y' }}</span>
+            <span *ngIf="promo.starts_at || promo.ends_at"> → </span>
+            <span *ngIf="promo.ends_at">{{ promo.ends_at | date:'MMM d, y' }}</span>
+            <span *ngIf="!promo.starts_at && !promo.ends_at">Always</span>
+          </td>
+          <td>{{ promo.priority }}</td>
+          <td>
+            <span class="status-pill"
+                  [class.live]="promo.is_live"
+                  [class.paused]="promo.status === 'paused'"
+                  [class.scheduled]="promo.status === 'active' && !promo.is_live">
+              {{ promo.status === 'paused' ? 'Paused' : (promo.is_live ? 'Live' : 'Scheduled') }}
+            </span>
+          </td>
+          <td class="actions-col">
+            <button class="icon-btn" (click)="toggleStatus(promo)"
+                    [title]="promo.status === 'active' ? 'Pause' : 'Activate'">
+              <i class="fa-solid" [class.fa-pause]="promo.status === 'active'" [class.fa-play]="promo.status === 'paused'"></i>
+            </button>
+            <button class="icon-btn edit" (click)="openEdit(promo)" title="Edit">
+              <i class="fa-solid fa-pencil"></i>
+            </button>
+            <button class="icon-btn delete" (click)="confirmDelete(promo)" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create / Edit modal -->
+<div class="admin-modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="admin-modal admin-modal-large" (click)="$event.stopPropagation()">
+    <div class="admin-modal-header">
+      <h2>{{ editingId ? 'Edit Promotion' : 'New Promotion' }}</h2>
+      <button class="admin-modal-close" (click)="closeModal()"><i class="fa-solid fa-times"></i></button>
+    </div>
+
+    <div class="admin-modal-body">
+      <div class="admin-form-group">
+        <label>Name</label>
+        <input class="admin-form-input" [(ngModel)]="form.name" placeholder="e.g. Summer Sale" />
+      </div>
+
+      <div class="admin-form-group">
+        <label>Description (optional)</label>
+        <input class="admin-form-input" [(ngModel)]="form.description" placeholder="Short internal note" />
+      </div>
+
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label>Discount type</label>
+          <select class="admin-form-input" [(ngModel)]="form.discount_type">
+            <option value="percentage">Percentage (%)</option>
+            <option value="fixed">Fixed amount (DT)</option>
+          </select>
+        </div>
+        <div class="admin-form-group">
+          <label>Value</label>
+          <input class="admin-form-input" type="number" min="0" [(ngModel)]="form.value" />
+        </div>
+      </div>
+
+      <div class="admin-form-group">
+        <label>Applies to</label>
+        <select class="admin-form-input" [(ngModel)]="form.target_type" (ngModelChange)="onTargetTypeChange()">
+          <option value="products">Selected products</option>
+          <option value="category">A whole category</option>
+          <option value="all">Entire catalog</option>
+        </select>
+      </div>
+
+      <div class="admin-form-group" *ngIf="needsCategory">
+        <label>Category</label>
+        <select class="admin-form-input" [(ngModel)]="form.category_id">
+          <option [ngValue]="null" disabled>Choose a category…</option>
+          <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+
+      <div class="admin-form-group" *ngIf="needsProducts">
+        <label>Products ({{ (form.product_ids || []).length }} selected)</label>
+        <div class="product-picker">
+          <label class="picker-item" *ngFor="let p of products">
+            <input type="checkbox" [checked]="isProductSelected(p.id)" (change)="toggleProduct(p.id)" />
+            <span>{{ p.name }}</span>
+          </label>
+          <div class="picker-empty" *ngIf="products.length === 0">No products available.</div>
+        </div>
+      </div>
+
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label>Starts at (optional)</label>
+          <input class="admin-form-input" type="datetime-local" [(ngModel)]="form.starts_at" />
+        </div>
+        <div class="admin-form-group">
+          <label>Ends at (optional)</label>
+          <input class="admin-form-input" type="datetime-local" [(ngModel)]="form.ends_at" />
+        </div>
+      </div>
+
+      <div class="admin-form-row">
+        <div class="admin-form-group">
+          <label>Priority (higher wins conflicts)</label>
+          <input class="admin-form-input" type="number" min="0" [(ngModel)]="form.priority" />
+        </div>
+        <div class="admin-form-group">
+          <label>Status</label>
+          <select class="admin-form-input" [(ngModel)]="form.status">
+            <option value="active">Active</option>
+            <option value="paused">Paused</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="admin-message error" *ngIf="formError">{{ formError }}</div>
+    </div>
+
+    <div class="admin-modal-footer">
+      <button class="admin-button-cancel" (click)="closeModal()">Cancel</button>
+      <button class="admin-button-submit" (click)="save()" [disabled]="saving">
+        {{ saving ? 'Saving…' : (editingId ? 'Save Changes' : 'Create Promotion') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation -->
+<div class="admin-modal-overlay" *ngIf="showDeleteModal" (click)="closeDelete()">
+  <div class="admin-modal admin-modal-small" (click)="$event.stopPropagation()">
+    <div class="admin-modal-header">
+      <h2>Delete Promotion</h2>
+      <button class="admin-modal-close" (click)="closeDelete()"><i class="fa-solid fa-times"></i></button>
+    </div>
+    <div class="admin-modal-body">
+      <p>Delete <strong>{{ deleteTarget?.name }}</strong>? This cannot be undone.</p>
+    </div>
+    <div class="admin-modal-footer">
+      <button class="admin-button-cancel" (click)="closeDelete()">Cancel</button>
+      <button class="admin-button-delete" (click)="executeDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

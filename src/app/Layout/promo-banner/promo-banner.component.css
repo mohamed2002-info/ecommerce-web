@@ -1,0 +1,217 @@
+/* ============================================================
+   Futuristic promotion banner — animated, glowing, high-clarity.
+   Theme-aware via design tokens; reads on both light and dark.
+   ============================================================ */
+
+.promo-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 48px;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  color: #f5f9ff;
+  /* deep tech gradient base */
+  background: linear-gradient(110deg, #0b1020 0%, #16224a 35%, #0e2f6b 60%, #0b1020 100%);
+  background-size: 220% 100%;
+  animation: promo-gradient 12s ease infinite;
+  border-bottom: 1px solid rgba(173, 198, 255, 0.35);
+  box-shadow: 0 6px 24px rgba(11, 47, 107, 0.45), inset 0 -1px 0 rgba(173, 198, 255, 0.25);
+}
+
+@keyframes promo-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* moving dot-grid backdrop */
+.promo-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(173, 198, 255, 0.18) 1px, transparent 1px);
+  background-size: 22px 22px;
+  animation: promo-grid-move 6s linear infinite;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@keyframes promo-grid-move {
+  from { background-position: 0 0; }
+  to { background-position: 22px 22px; }
+}
+
+/* diagonal light sweep */
+.promo-sheen {
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(173, 198, 255, 0.45), transparent);
+  filter: blur(6px);
+  animation: promo-sheen 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes promo-sheen {
+  0% { left: -40%; }
+  55%, 100% { left: 130%; }
+}
+
+.promo-banner-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1200px;
+}
+
+/* pulsing bolt */
+.promo-bolt {
+  font-size: 18px;
+  color: #ffd84d;
+  filter: drop-shadow(0 0 8px rgba(255, 216, 77, 0.8));
+  animation: promo-bolt 1.6s ease-in-out infinite;
+}
+
+@keyframes promo-bolt {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+  50% { transform: scale(1.18) rotate(-6deg); opacity: 1; }
+}
+
+/* big glowing discount chip */
+.promo-discount {
+  display: inline-flex;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  padding: 4px 14px;
+  border-radius: var(--radius-pill);
+  color: #08122e;
+  background: linear-gradient(135deg, #ffe98a 0%, #ffd84d 55%, #ffb02e 100%);
+  box-shadow: 0 0 16px rgba(255, 216, 77, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  animation: promo-chip-pulse 2s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+@keyframes promo-chip-pulse {
+  0%, 100% { box-shadow: 0 0 14px rgba(255, 216, 77, 0.5), inset 0 1px 0 rgba(255,255,255,0.6); }
+  50% { box-shadow: 0 0 26px rgba(255, 216, 77, 0.95), inset 0 1px 0 rgba(255,255,255,0.6); }
+}
+
+/* text block */
+.promo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.promo-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #ffd84d;
+  text-shadow: 0 0 8px rgba(255, 216, 77, 0.5);
+}
+
+.promo-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+  text-shadow: 0 1px 8px rgba(75, 142, 255, 0.6);
+}
+
+.promo-desc { font-weight: 400; opacity: 0.85; font-size: 13px; }
+
+/* neon countdown */
+.promo-countdown {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(8, 14, 34, 0.55);
+  border: 1px solid rgba(173, 198, 255, 0.55);
+  box-shadow: 0 0 14px rgba(75, 142, 255, 0.4), inset 0 0 10px rgba(75, 142, 255, 0.18);
+}
+
+.cd-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #adc6ff;
+}
+
+.cd-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(173, 198, 255, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+/* rotation dots */
+.promo-dots { display: inline-flex; gap: 6px; align-items: center; }
+
+.promo-dots .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(173, 198, 255, 0.35);
+  transition: all var(--transition);
+}
+
+.promo-dots .dot.active {
+  background: #ffd84d;
+  box-shadow: 0 0 8px rgba(255, 216, 77, 0.9);
+}
+
+/* close */
+.promo-close {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(173, 198, 255, 0.4);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  color: #cfe0ff;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all var(--transition);
+}
+
+.promo-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(173, 198, 255, 0.6);
+}
+
+/* respect reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .promo-banner, .promo-grid, .promo-sheen, .promo-bolt, .promo-discount {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .promo-banner { padding: 10px 42px; }
+  .promo-banner-inner { gap: 10px; }
+  .promo-discount { font-size: 18px; padding: 3px 11px; }
+  .promo-desc { display: none; }
+  .promo-name { font-size: 14px; }
+}

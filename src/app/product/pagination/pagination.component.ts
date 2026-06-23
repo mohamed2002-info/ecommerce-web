@@ -10,11 +10,11 @@ import { Product } from '../../Models/product.model';
   styleUrls: ['./pagination.component.css']
 })
 export class PaginationComponent implements OnInit {
-  itemsPerPage: number = 10;
+  itemsPerPage: number = 14;
   currentPage: number = 1;
   totalPages: number = 1;
   totalItems: number = 0;
-  pageSizeOptions: number[] = [10, 25, 50];
+  pageSizeOptions: number[] = [14, 25, 50];
   allProducts: Product[] = [];
   categoryFilter: CategoryFilter = this.searchService.getCategoryFilter();
 

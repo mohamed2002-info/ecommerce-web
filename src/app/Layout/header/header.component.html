@@ -1,7 +1,7 @@
 <div class="header-container">
   <div class="top-bar">
     <div class="logo">
-      <img src="/assets/Img/ASM.png" alt="Logo">
+      <a class="brand-name" routerLink="/">e-commerce</a>
     </div>
     <div class="search-bar-container">
       <div class="search-bar">
@@ -17,6 +17,9 @@
       </div>
     </div>
     <div class="top-bar-actions">
+      <button class="action-button theme-toggle" [title]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'" (click)="toggleTheme()">
+        <i class="fa-solid" [class.fa-moon]="theme === 'light'" [class.fa-sun]="theme === 'dark'"></i>
+      </button>
       <button class="action-button" title="Wishlist" (click)="goToWishlist()" *ngIf="!isAdmin">
         <i class="fa-solid fa-heart"></i>
         <span class="wishlist-badge" *ngIf="wishlistCount > 0">{{ wishlistCount }}</span>
@@ -25,16 +28,26 @@
         <i class="fa-solid fa-cart-shopping"></i>
         <span class="cart-badge" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
       </button>
-      <div class="user-menu-container">
+      <!-- Logged in: account menu -->
+      <div class="user-menu-container" *ngIf="isLoggedIn">
         <button class="action-button user-button" (click)="toggleUserMenu()" [title]="userEmail || 'Account'">
           <i class="fa-solid fa-user"></i>
         </button>
         <div class="user-dropdown" *ngIf="showUserMenu">
+          <div class="dropdown-email" *ngIf="userEmail">{{ userEmail }}</div>
+          <button class="dropdown-link" *ngIf="isAdmin" (click)="goToPromotions()">
+            <i class="fa-solid fa-tags"></i> Manage Promotions
+          </button>
           <button class="logout-button" (click)="logout()">
             <i class="fa-solid fa-sign-out-alt"></i> Logout
           </button>
         </div>
       </div>
+
+      <!-- Logged out: login / sign-up -->
+      <button class="login-cta" *ngIf="!isLoggedIn" (click)="goToLogin()">
+        <i class="fa-solid fa-right-to-bracket"></i> Login
+      </button>
     </div>
   </div>
   <div class="nav-bar">
@@ -252,6 +265,16 @@
         <div class="admin-form-group">
           <label>Description *</label>
           <textarea [(ngModel)]="productDescription" placeholder="Enter product description" rows="4" class="admin-form-input"></textarea>
+        </div>
+        <div class="admin-form-group" *ngIf="stores.length">
+          <label>Stock per boutique</label>
+          <div class="stock-grid">
+            <div class="stock-row" *ngFor="let s of stores">
+              <span class="stock-store"><i class="fa-solid fa-store"></i> {{ s.city }}</span>
+              <input type="number" min="0" class="admin-form-input stock-input"
+                     [(ngModel)]="productStock[s.id]" placeholder="0" />
+            </div>
+          </div>
         </div>
         <div class="admin-form-group">
           <label>Product Image</label>
